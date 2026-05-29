@@ -1,0 +1,56 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: habit-tracker
+
+  # Блок по умолчанию (будет использоваться, если не указан профиль)
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: true
+    show-sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+---
+# Профиль для H2 (активируется при spring.profiles.active=dev)
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+
+---
+# Профиль для PostgreSQL (активируется при spring.profiles.active=postgres)
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: jdbc:postgresql://localhost:5432/progress_tracker
+    username: postgres    # или tracker, когда починим
+    password: secret
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 5000
+      maximum-pool-size: 10
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect

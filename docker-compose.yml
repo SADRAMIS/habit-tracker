@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: progress-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: progress_tracker
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
