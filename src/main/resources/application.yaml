@@ -38,6 +38,11 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
 
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS}
+
 ---
 # Профиль для PostgreSQL (активируется при spring.profiles.active=postgres)
 spring:
