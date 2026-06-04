@@ -15,6 +15,7 @@ spring:
           time_zone: UTC
         format_sql: true
     show-sql: true
+    open-in-view: false
 
 logging:
   level:
@@ -35,8 +36,6 @@ spring:
   h2:
     console:
       enabled: true
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
 
 app:
   jwt:
