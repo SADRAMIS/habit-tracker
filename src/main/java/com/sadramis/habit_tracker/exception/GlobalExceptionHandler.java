@@ -38,4 +38,16 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(500, "Внутренняя ошибка сервера", null);
         return ResponseEntity.status(500).body(errorResponse);
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(404, ex.getMessage(), null);
+        return ResponseEntity.status(404).body(error);
+    }
+
+    @ExceptionHandler(GoalNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleGoalNotFound(GoalNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(404, ex.getMessage(), null);
+        return ResponseEntity.status(404).body(errorResponse);
+    }
 }
