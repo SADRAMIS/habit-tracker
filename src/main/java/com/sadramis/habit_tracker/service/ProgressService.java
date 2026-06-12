@@ -25,7 +25,7 @@ public class ProgressService {
 
         Progress progress = new Progress();
         progress.setGoal(goal);
-        progress.setValue(request.getValue());
+        progress.setProgressValue(request.getProgressValue());
         progress.setDate(request.getDate());
 
         progressRepository.save(progress);

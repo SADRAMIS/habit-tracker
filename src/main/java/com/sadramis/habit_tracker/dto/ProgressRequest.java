@@ -15,7 +15,7 @@ public class ProgressRequest {
     private Long goalId;
     @NotNull
     @Positive
-    private Double value;
+    private Double progressValue;
     @NotNull
     @PastOrPresent
     private Instant date;

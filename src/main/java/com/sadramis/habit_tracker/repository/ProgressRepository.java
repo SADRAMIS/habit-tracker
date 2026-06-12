@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 public interface ProgressRepository extends JpaRepository<Progress, Long> {
     List<Progress> findByGoal_IdOrderByDateDesc(Long goalId);
-    @Query("SELECT SUM(p.value) FROM Progress p WHERE p.goal.id = :goalId")
+    @Query("SELECT SUM(p.progressValue) FROM Progress p WHERE p.goal.id = :goalId")
     Double sumValueByGoalId(@Param("goalId") Long goalId);
 }

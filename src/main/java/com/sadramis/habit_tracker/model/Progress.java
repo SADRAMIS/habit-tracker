@@ -26,6 +26,6 @@ public class Progress {
     private Instant date;
 
     @Column(nullable = false)
-    private Double value;
+    private Double progressValue;
 
 }
