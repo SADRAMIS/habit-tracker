@@ -4,11 +4,24 @@ services:
     container_name: progress-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: progress_tracker
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: habit-tracker-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+
 volumes:
   pgdata:
