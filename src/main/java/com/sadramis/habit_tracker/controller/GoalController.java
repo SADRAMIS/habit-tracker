@@ -5,6 +5,7 @@ import com.sadramis.habit_tracker.dto.GoalRequest;
 import com.sadramis.habit_tracker.exception.UserNotFoundException;
 import com.sadramis.habit_tracker.model.User;
 import com.sadramis.habit_tracker.repository.UserRepository;
+import com.sadramis.habit_tracker.service.ExportService;
 import com.sadramis.habit_tracker.service.GoalService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/goals")
@@ -20,10 +22,12 @@ public class GoalController {
 
     private final UserRepository userRepository;
     private final GoalService goalService;
+    private final ExportService exportService;
 
-    public GoalController(UserRepository userRepository, GoalService goalService) {
+    public GoalController(UserRepository userRepository, GoalService goalService, ExportService exportService) {
         this.userRepository = userRepository;
         this.goalService = goalService;
+        this.exportService = exportService;
     }
 
     @PostMapping
@@ -51,5 +55,21 @@ public class GoalController {
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         GoalDto goalDto = goalService.getGoalById(goalId, user.getId());
         return ResponseEntity.ok(goalDto);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportGoals(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        Long userId = user.getId();
+
+        CompletableFuture<byte[]> future = exportService.exportUserGoals(userId);
+        byte[] csvBytes = future.join(); // блокируем поток до получения результата
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=goals.csv")
+                .header("Content-Type", "text/csv; charset=UTF-8")
+                .body(csvBytes);
     }
 }
