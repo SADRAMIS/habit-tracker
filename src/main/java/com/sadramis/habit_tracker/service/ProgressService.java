@@ -9,6 +9,7 @@ import com.sadramis.habit_tracker.repository.GoalRepository;
 import com.sadramis.habit_tracker.repository.ProgressRepository;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 
@@ -17,12 +18,14 @@ public class ProgressService {
 
     private final ProgressRepository progressRepository;
     private final GoalRepository goalRepository;
-    private final KafkaTemplate<String, GoalAchievedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
-    public ProgressService(ProgressRepository progressRepository, GoalRepository goalRepository, KafkaTemplate<String, GoalAchievedEvent> kafkaTemplate) {
+    public ProgressService(ProgressRepository progressRepository, GoalRepository goalRepository, KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.progressRepository = progressRepository;
         this.goalRepository = goalRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public void addProgress(ProgressRequest request, Long userId) {
@@ -48,8 +51,13 @@ public class ProgressService {
                     userId,
                     "Поздравляем! Вы достигли цели \"" + goal.getTitle() + "\"",
                     Instant.now()
-                    );
-            kafkaTemplate.send("goal-events",goal.getId().toString(),event);
+            );
+            try {
+                String json = objectMapper.writeValueAsString(event);
+                kafkaTemplate.send("goal-events",goal.getId().toString(),json);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
