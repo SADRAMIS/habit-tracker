@@ -35,3 +35,4 @@ build/
 .env
 
 application-dev.yml
+application-test.yml

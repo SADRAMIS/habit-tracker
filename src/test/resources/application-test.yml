@@ -1,0 +1,4 @@
+app:
+  jwt:
+    secret: c3VwZXJTZWNyZXRLZXlGb3JKV1QxMjM0NTY3ODkwU2VjdXJl
+    expiration-ms: 86400000
