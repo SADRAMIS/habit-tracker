@@ -5,10 +5,13 @@ import com.sadramis.habit_tracker.dto.GoalRequest;
 import com.sadramis.habit_tracker.exception.GoalNotFoundException;
 import com.sadramis.habit_tracker.exception.UserNotFoundException;
 import com.sadramis.habit_tracker.model.Goal;
+import com.sadramis.habit_tracker.model.GoalStatus;
 import com.sadramis.habit_tracker.model.User;
 import com.sadramis.habit_tracker.repository.GoalRepository;
 import com.sadramis.habit_tracker.repository.ProgressRepository;
 import com.sadramis.habit_tracker.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,7 @@ public class GoalService {
     private GoalRepository goalRepository;
     private ProgressRepository progressRepository;
     private UserRepository userRepository;
+    private static final Logger log = LoggerFactory.getLogger(GoalService.class);
 
     public GoalService(GoalRepository goalRepository, ProgressRepository progressRepository, UserRepository userRepository) {
         this.goalRepository = goalRepository;
@@ -107,6 +111,18 @@ public class GoalService {
         } else {
             return "IN_PROGRESS";
         }
+    }
 
+    @Transactional
+    public void markGoalCompleted(Long goalId, Long userId) {
+        Goal goal = goalRepository.findByIdAndUser_Id(goalId, userId)
+                .orElseThrow(() -> new GoalNotFoundException("Цель не найдена"));
+        if (goal.getStatus() != GoalStatus.COMPLETED) {
+            goal.setStatus(GoalStatus.COMPLETED);
+            goalRepository.save(goal);
+            log.info("Цель {} пользователя {} отмечена как COMPLETED", goalId, userId);
+        } else {
+            log.info("Цель {} уже была COMPLETED, пропускаем", goalId);
+        }
     }
 }

@@ -1,7 +1,8 @@
 package com.sadramis.habit_tracker.service;
 
+import com.sadramis.habit_tracker.dto.GoalCompletedEvent;
 import com.sadramis.habit_tracker.dto.ProgressRequest;
-import com.sadramis.habit_tracker.event.GoalAchievedEvent;
+
 import com.sadramis.habit_tracker.exception.GoalNotFoundException;
 import com.sadramis.habit_tracker.model.Goal;
 import com.sadramis.habit_tracker.model.Progress;
@@ -10,8 +11,6 @@ import com.sadramis.habit_tracker.repository.ProgressRepository;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
-
-import java.time.Instant;
 
 @Service
 public class ProgressService {
@@ -46,18 +45,9 @@ public class ProgressService {
 
         double previousSum = sum - request.getProgressValue();
         if (previousSum < goal.getTargetValue() && sum >= goal.getTargetValue()) {
-            GoalAchievedEvent event = new GoalAchievedEvent(
-                    goal.getId(),
-                    userId,
-                    "Поздравляем! Вы достигли цели \"" + goal.getTitle() + "\"",
-                    Instant.now()
-            );
-            try {
-                String json = objectMapper.writeValueAsString(event);
-                kafkaTemplate.send("goal-events",goal.getId().toString(),json);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            GoalCompletedEvent event = new GoalCompletedEvent(goal.getId(), userId, "Поздравляем! Вы достигли цели");
+            String json = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send("goal-events",goal.getId().toString(),json);
         }
     }
 }

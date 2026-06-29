@@ -36,6 +36,10 @@ public class Goal {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private GoalStatus status = GoalStatus.IN_PROGRESS;
+
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();
