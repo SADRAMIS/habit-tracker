@@ -56,20 +56,4 @@ public class GoalController {
         GoalDto goalDto = goalService.getGoalById(goalId, user.getId());
         return ResponseEntity.ok(goalDto);
     }
-
-    @GetMapping("/export")
-    public ResponseEntity<byte[]> exportGoals(Authentication authentication) {
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
-        Long userId = user.getId();
-
-        CompletableFuture<byte[]> future = exportService.exportUserGoals(userId);
-        byte[] csvBytes = future.join(); // блокируем поток до получения результата
-
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=goals.csv")
-                .header("Content-Type", "text/csv; charset=UTF-8")
-                .body(csvBytes);
-    }
 }
