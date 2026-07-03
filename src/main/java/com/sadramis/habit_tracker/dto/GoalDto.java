@@ -1,12 +1,12 @@
 package com.sadramis.habit_tracker.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.Instant;
 
 @AllArgsConstructor
-@Getter
+@NoArgsConstructor
+@Data
 public class GoalDto {
     private Long id;
     private String title;
