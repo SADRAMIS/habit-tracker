@@ -68,4 +68,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.actor }}/habit-tracker:latest
+          tags: ghcr.io/sadramis/habit-tracker:latest
