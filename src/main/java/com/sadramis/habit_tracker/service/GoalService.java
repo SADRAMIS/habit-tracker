@@ -12,6 +12,8 @@ import com.sadramis.habit_tracker.repository.ProgressRepository;
 import com.sadramis.habit_tracker.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,7 @@ public class GoalService {
     }
 
     @Transactional
+    @CacheEvict(value = "user_goals", key = "#userId")
     public GoalDto createGoal(GoalRequest request, Long userId) {
 
         User user = userRepository.findById(userId).
@@ -59,6 +62,7 @@ public class GoalService {
         return goalDto;
     }
     @Transactional(readOnly = true)
+    @Cacheable(value = "user_goals", key = "#userId")
     public List<GoalDto> getUserGoals(Long userId) {
         List<Goal> goals = goalRepository.findByUser_Id(userId);
         List<GoalDto> dtos = new ArrayList<>();
