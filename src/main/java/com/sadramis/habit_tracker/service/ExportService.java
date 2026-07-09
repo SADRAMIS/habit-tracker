@@ -3,15 +3,14 @@ package com.sadramis.habit_tracker.service;
 import com.sadramis.habit_tracker.dto.GoalDto;
 import com.sadramis.habit_tracker.export.ExportStatus;
 import com.sadramis.habit_tracker.export.ExportTask;
+import com.sadramis.habit_tracker.repository.ExportTaskRepository;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
 @Service
@@ -19,11 +18,12 @@ public class ExportService {
 
     private final GoalService goalService;
     private final ForkJoinPool forkJoinPool;
-    private final Map<UUID, ExportTask> taskStore = new ConcurrentHashMap<>();
+    private final ExportTaskRepository repository;
 
-    public ExportService(GoalService goalService, ForkJoinPool forkJoinPool) {
+    public ExportService(GoalService goalService, ForkJoinPool forkJoinPool, ExportTaskRepository repository) {
         this.goalService = goalService;
         this.forkJoinPool = forkJoinPool;
+        this.repository = repository;
     }
 
     public UUID initiateExport(Long userId) {
@@ -35,7 +35,7 @@ public class ExportService {
         task.setCreatedAt(LocalDateTime.now());
         task.setCsvData(null);
         task.setErrorMessage(null);
-        taskStore.put(taskId, task);
+        repository.save(task);
 
         CompletableFuture.supplyAsync(() -> generateCsv(userId), forkJoinPool)
                 .whenComplete((csvData, throwable) -> {
@@ -46,12 +46,13 @@ public class ExportService {
                         task.setErrorMessage(throwable.getMessage());
                         task.setExportStatus(ExportStatus.FAILED);
                     }
+                    repository.save(task);
                 });
         return taskId;
     }
 
     public ExportTask getTask(UUID taskId) {
-        return taskStore.get(taskId);
+        return repository.findById(taskId).orElse(null);
     }
 
     private byte[] generateCsv(Long userId) {
