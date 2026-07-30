@@ -1,0 +1,8 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: habit-tracker
+  config:
+    import: optional:configserver:http://localhost:8888

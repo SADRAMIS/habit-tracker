@@ -32,7 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-.env
+habit-tracker/.env
 
 application-dev.yml
 application-test.yml
