@@ -33,6 +33,7 @@ build/
 .vscode/
 
 habit-tracker/.env
+.env
 
 application-dev.yml
 application-test.yml

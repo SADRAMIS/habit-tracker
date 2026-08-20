@@ -1,4 +1,5 @@
 services:
+  # ----- ИНФРАСТРУКТУРА (БД, Брокеры, Кэш) -----
   postgres:
     image: postgres:15-alpine
     container_name: progress-db
@@ -11,20 +12,6 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: habit-tracker-app
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-      - kafka
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -53,6 +40,73 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+
+  # ----- МИКРОСЕРВИСЫ -----
+  config-server:
+    build: ./config-server
+    ports:
+      - "8888:8888"
+    container_name: config-server
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  discovery-server:
+    build: ./discovery-server
+    ports:
+      - "8761:8761"
+    container_name: discovery-server
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway-server:
+    build: ./gateway-server
+    ports:
+      - "8081:8081"
+    container_name: gateway-server
+    environment:
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      habit-tracker:
+        condition: service_started
+
+  habit-tracker:
+    build: ./habit-tracker
+    container_name: habit-tracker
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
 
 volumes:
   pgdata:
