@@ -1,4 +1,4 @@
-package com.sadramis.habit_tracker.repository;
+package com.sadramis.habit_tracker.export.repository;
 
 import com.sadramis.habit_tracker.export.ExportTask;
 import org.springframework.data.repository.CrudRepository;

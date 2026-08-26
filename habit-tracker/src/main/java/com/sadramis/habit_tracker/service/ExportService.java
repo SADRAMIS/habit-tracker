@@ -3,7 +3,7 @@ package com.sadramis.habit_tracker.service;
 import com.sadramis.habit_tracker.dto.GoalDto;
 import com.sadramis.habit_tracker.export.ExportStatus;
 import com.sadramis.habit_tracker.export.ExportTask;
-import com.sadramis.habit_tracker.repository.ExportTaskRepository;
+import com.sadramis.habit_tracker.export.repository.ExportTaskRepository;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
