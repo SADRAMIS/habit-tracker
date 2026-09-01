@@ -8,6 +8,9 @@ export default function GoalsPage() {
   const [targetValue, setTargetValue] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Добавляем состояние для отслеживания, какая цель сейчас завершается
+  const [loadingGoalId, setLoadingGoalId] = useState(null);
+
   const loadGoals = async () => {
     const data = await api.getGoals();
     setGoals(data);
@@ -38,6 +41,22 @@ export default function GoalsPage() {
     }
   };
 
+  // Новая функция для завершения цели (Шаг 5)
+  const completeGoal = async (goalId) => {
+      try {
+        await api.completeGoal(goalId);
+        setLoadingGoalId(goalId);
+        setTimeout(async () => {
+          await loadGoals();
+          setLoadingGoalId(null);
+        }, 3000);
+      } catch (error) {
+        console.error('Ошибка при завершении цели:', error);
+        alert('Не удалось завершить цель');
+        setLoadingGoalId(null);
+      }
+  };
+
   return (
     <div style={{ maxWidth: 800, margin: '20px auto' }}>
       <h1>Мои цели</h1>
@@ -56,6 +75,17 @@ export default function GoalsPage() {
               <strong>{goal.title}</strong> — {goal.status}
               <p>{goal.description}</p>
               <p>Прогресс: {goal.currentValue ?? 0} / {goal.targetValue}</p>
+
+              {/* Новая кнопка завершения */}
+              {goal.status === 'IN_PROGRESS' && (
+                <button
+                  onClick={() => completeGoal(goal.id)}
+                  disabled={loadingGoalId === goal.id}
+                  style={{ marginTop: 10, padding: '5px 10px', cursor: loadingGoalId === goal.id ? 'not-allowed' : 'pointer' }}
+                >
+                  {loadingGoalId === goal.id ? 'Обработка...' : 'Завершить'}
+                </button>
+              )}
             </li>
           ))}
         </ul>

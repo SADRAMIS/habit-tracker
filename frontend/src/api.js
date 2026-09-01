@@ -21,6 +21,10 @@ async function request(path, options = {}) {
     throw new Error(errorData.message || 'Ошибка запроса');
   }
 
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+
   return response.json();
 }
 
@@ -32,4 +36,5 @@ export const api = {
   addProgress: (data) => request('/progress', { method: 'POST', body: JSON.stringify(data) }),
   startExport: () => request('/export/goals', { method: 'POST' }),
   getExport: (taskId) => request(`/export/${taskId}`),
+  completeGoal: (goalId) => request(`/goals/${goalId}/complete`, { method: 'POST' }),
 };

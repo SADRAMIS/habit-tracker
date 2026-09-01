@@ -55,4 +55,14 @@ public class GoalController {
         GoalDto goalDto = goalService.getGoalById(goalId, user.getId());
         return ResponseEntity.ok(goalDto);
     }
+    @PostMapping("/{goalId}/complete")
+    public ResponseEntity<Void> completeGoal(@PathVariable Long goalId, Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+
+        goalService.markGoalCompleted(goalId, user.getId());
+
+        return ResponseEntity.ok().build();
+    }
 }

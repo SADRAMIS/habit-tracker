@@ -108,16 +108,27 @@ public class GoalService {
     }
 
     private String determineStatus(Goal goal, Double currentValue) {
+        // 1. Если цель уже была явно завершена пользователем, не трогаем её
+        if (goal.getStatus() == GoalStatus.COMPLETED) {
+            return "COMPLETED";
+        }
+
+        // 2. Если прогресс достиг цели, помечаем как завершенную
         if (currentValue >= goal.getTargetValue()) {
             return "COMPLETED";
-        } else if (goal.getDeadline().isBefore(Instant.now())){
-            return "EXPIRED";
-        } else {
-            return "IN_PROGRESS";
         }
+
+        // 3. Если дедлайн прошел, помечаем как просроченную
+        if (goal.getDeadline().isBefore(Instant.now())){
+            return "EXPIRED";
+        }
+
+        // 4. Иначе цель в работе
+        return "IN_PROGRESS";
     }
 
     @Transactional
+    @CacheEvict(value = "user_goals", key = "#userId")
     public void markGoalCompleted(Long goalId, Long userId) {
         Goal goal = goalRepository.findByIdAndUser_Id(goalId, userId)
                 .orElseThrow(() -> new GoalNotFoundException("Цель не найдена"));
