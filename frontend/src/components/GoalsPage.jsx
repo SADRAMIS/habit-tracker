@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import { useNavigate } from 'react-router-dom';
 
-export default function GoalsPage() {
+export default function GoalsPage({ onLogout }) {
+  const navigate = useNavigate();
   const [goals, setGoals] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetValue, setTargetValue] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Добавляем состояние для отслеживания, какая цель сейчас завершается
+  const [progressValues, setProgressValues] = useState({});
   const [loadingGoalId, setLoadingGoalId] = useState(null);
 
   const loadGoals = async () => {
@@ -28,7 +29,7 @@ export default function GoalsPage() {
         title,
         description,
         targetValue: parseFloat(targetValue),
-        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // через месяц
+        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       });
       setTitle('');
       setDescription('');
@@ -41,20 +42,41 @@ export default function GoalsPage() {
     }
   };
 
-  // Новая функция для завершения цели (Шаг 5)
   const completeGoal = async (goalId) => {
-      try {
-        await api.completeGoal(goalId);
-        setLoadingGoalId(goalId);
-        setTimeout(async () => {
-          await loadGoals();
-          setLoadingGoalId(null);
-        }, 3000);
-      } catch (error) {
-        console.error('Ошибка при завершении цели:', error);
-        alert('Не удалось завершить цель');
+    try {
+      await api.completeGoal(goalId);
+      setLoadingGoalId(goalId);
+      setTimeout(async () => {
+        await loadGoals();
         setLoadingGoalId(null);
-      }
+      }, 3000);
+    } catch (error) {
+      console.error('Ошибка при завершении цели:', error);
+      alert('Не удалось завершить цель');
+      setLoadingGoalId(null);
+    }
+  };
+
+  const handleAddProgress = async (goalId) => {
+    const value = progressValues[goalId];
+    if (!value || isNaN(value)) {
+      alert('Введите число для прогресса');
+      return;
+    }
+    try {
+      await api.addProgress({ goalId, progressValue: parseFloat(value), date: new Date().toISOString() });
+      setProgressValues((prev) => ({ ...prev, [goalId]: '' }));
+      await loadGoals();
+    } catch (error) {
+      alert('Ошибка при добавлении прогресса: ' + error.message);
+    }
+  };
+
+  // Функция выхода
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    onLogout(); // Обновляем состояние в App (token становится null)
+    navigate('/'); // Переходим на страницу логина
   };
 
   return (
@@ -76,21 +98,35 @@ export default function GoalsPage() {
               <p>{goal.description}</p>
               <p>Прогресс: {goal.currentValue ?? 0} / {goal.targetValue}</p>
 
-              {/* Новая кнопка завершения */}
               {goal.status === 'IN_PROGRESS' && (
-                <button
-                  onClick={() => completeGoal(goal.id)}
-                  disabled={loadingGoalId === goal.id}
-                  style={{ marginTop: 10, padding: '5px 10px', cursor: loadingGoalId === goal.id ? 'not-allowed' : 'pointer' }}
-                >
-                  {loadingGoalId === goal.id ? 'Обработка...' : 'Завершить'}
-                </button>
+                <>
+                  <button
+                    onClick={() => completeGoal(goal.id)}
+                    disabled={loadingGoalId === goal.id}
+                    style={{ marginTop: 10, padding: '5px 10px', cursor: loadingGoalId === goal.id ? 'not-allowed' : 'pointer' }}
+                  >
+                    {loadingGoalId === goal.id ? 'Обработка...' : 'Завершить'}
+                  </button>
+
+                  <div style={{ marginTop: 10 }}>
+                    <input
+                      type="number"
+                      placeholder="Сколько добавить?"
+                      value={progressValues[goal.id] || ''}
+                      onChange={(e) => setProgressValues((prev) => ({ ...prev, [goal.id]: e.target.value }))}
+                      style={{ marginRight: 10, padding: '5px', width: '120px' }}
+                    />
+                    <button onClick={() => handleAddProgress(goal.id)} style={{ padding: '5px 10px' }}>
+                      Добавить
+                    </button>
+                  </div>
+                </>
               )}
             </li>
           ))}
         </ul>
       )}
-      <button onClick={() => localStorage.removeItem('token') && window.location.reload()} style={{ marginTop: 20 }}>
+      <button onClick={handleLogout} style={{ marginTop: 20 }}>
         Выйти
       </button>
     </div>

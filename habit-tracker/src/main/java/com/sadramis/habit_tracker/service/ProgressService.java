@@ -8,8 +8,10 @@ import com.sadramis.habit_tracker.model.Goal;
 import com.sadramis.habit_tracker.model.Progress;
 import com.sadramis.habit_tracker.repository.GoalRepository;
 import com.sadramis.habit_tracker.repository.ProgressRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
@@ -27,6 +29,8 @@ public class ProgressService {
         this.objectMapper = objectMapper;
     }
 
+    @Transactional
+    @CacheEvict(value = "user_goals", key = "#userId") // ДОБАВЬ ЭТУ СТРОКУ
     public void addProgress(ProgressRequest request, Long userId) {
         Goal goal = goalRepository.findByIdAndUser_Id(request.getGoalId(), userId)
                 .orElseThrow(() -> new GoalNotFoundException("Цель не найдена"));
@@ -47,7 +51,7 @@ public class ProgressService {
         if (previousSum < goal.getTargetValue() && sum >= goal.getTargetValue()) {
             GoalCompletedEvent event = new GoalCompletedEvent(goal.getId(), userId, "Поздравляем! Вы достигли цели");
             String json = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("goal-events",goal.getId().toString(),json);
+            kafkaTemplate.send("goal-events", goal.getId().toString(), json);
         }
     }
 }

@@ -11,11 +11,16 @@ function App() {
     setToken(newToken);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+  };
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={token ? <Navigate to="/goals" /> : <LoginPage onLogin={handleLogin} />} />
-        <Route path="/goals" element={token ? <GoalsPage /> : <Navigate to="/" />} />
+        <Route path="/goals" element={token ? <GoalsPage onLogout={handleLogout} /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
