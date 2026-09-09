@@ -72,61 +72,97 @@ export default function GoalsPage({ onLogout }) {
     }
   };
 
-  // Функция выхода
   const handleLogout = () => {
     localStorage.removeItem('token');
-    onLogout(); // Обновляем состояние в App (token становится null)
-    navigate('/'); // Переходим на страницу логина
+    onLogout();
+    navigate('/');
+  };
+
+  const getStatusColor = (status) => {
+    if (status === 'COMPLETED') return 'bg-green-100 text-green-700';
+    if (status === 'EXPIRED') return 'bg-red-100 text-red-700';
+    return 'bg-yellow-100 text-yellow-700';
   };
 
   return (
-    <div style={{ maxWidth: 800, margin: '20px auto' }}>
-      <h1>Мои цели</h1>
-      <form onSubmit={handleCreateGoal} style={{ marginBottom: 30, padding: 20, border: '1px solid #ccc' }}>
-        <h3>Новая цель</h3>
-        <input placeholder="Название" value={title} onChange={(e) => setTitle(e.target.value)} required style={{ marginRight: 10 }} />
-        <input placeholder="Описание" value={description} onChange={(e) => setDescription(e.target.value)} style={{ marginRight: 10 }} />
-        <input placeholder="Целевое значение" type="number" value={targetValue} onChange={(e) => setTargetValue(e.target.value)} required style={{ marginRight: 10 }} />
-        <button type="submit" disabled={loading}>{loading ? 'Создание...' : 'Создать'}</button>
+    <div className="max-w-4xl mx-auto p-4 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Мои цели</h1>
+
+      {/* Форма создания */}
+      <form onSubmit={handleCreateGoal} className="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h3 className="text-xl font-semibold text-gray-700 mb-4">Новая цель</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input placeholder="Название" value={title} onChange={(e) => setTitle(e.target.value)} required className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input placeholder="Описание" value={description} onChange={(e) => setDescription(e.target.value)} className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input placeholder="Целевое значение" type="number" value={targetValue} onChange={(e) => setTargetValue(e.target.value)} required className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <button type="submit" disabled={loading} className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
+          {loading ? 'Создание...' : 'Создать'}
+        </button>
       </form>
 
-      {goals.length === 0 ? <p>Пока нет целей. Создайте первую!</p> : (
-        <ul>
+      {/* Список целей */}
+      {goals.length === 0 ? (
+        <p className="text-center text-gray-500 mt-10">Пока нет целей. Создайте первую!</p>
+      ) : (
+        <div className="space-y-4">
           {goals.map((goal) => (
-            <li key={goal.id} style={{ border: '1px solid #ddd', padding: 15, marginBottom: 10, listStyle: 'none' }}>
-              <strong>{goal.title}</strong> — {goal.status}
-              <p>{goal.description}</p>
-              <p>Прогресс: {goal.currentValue ?? 0} / {goal.targetValue}</p>
+            <div key={goal.id} className="bg-white rounded-xl shadow-md p-5">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-xl font-bold text-gray-800">{goal.title}</h3>
+                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(goal.status)}`}>
+                  {goal.status}
+                </span>
+              </div>
+              <p className="text-gray-600 mb-4">{goal.description}</p>
 
+              {/* Прогресс-бар */}
+              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                <div
+                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min((goal.currentValue / goal.targetValue) * 100, 100)}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                Прогресс: {goal.currentValue} / {goal.targetValue}
+              </p>
+
+              {/* Кнопки действий */}
               {goal.status === 'IN_PROGRESS' && (
-                <>
+                <div className="flex flex-col gap-3">
                   <button
                     onClick={() => completeGoal(goal.id)}
                     disabled={loadingGoalId === goal.id}
-                    style={{ marginTop: 10, padding: '5px 10px', cursor: loadingGoalId === goal.id ? 'not-allowed' : 'pointer' }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50"
                   >
                     {loadingGoalId === goal.id ? 'Обработка...' : 'Завершить'}
                   </button>
-
-                  <div style={{ marginTop: 10 }}>
+                  <div className="flex gap-2">
                     <input
                       type="number"
                       placeholder="Сколько добавить?"
                       value={progressValues[goal.id] || ''}
                       onChange={(e) => setProgressValues((prev) => ({ ...prev, [goal.id]: e.target.value }))}
-                      style={{ marginRight: 10, padding: '5px', width: '120px' }}
+                      className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button onClick={() => handleAddProgress(goal.id)} style={{ padding: '5px 10px' }}>
+                    <button
+                      onClick={() => handleAddProgress(goal.id)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition"
+                    >
                       Добавить
                     </button>
                   </div>
-                </>
+                </div>
               )}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
-      <button onClick={handleLogout} style={{ marginTop: 20 }}>
+
+      <button
+        onClick={handleLogout}
+        className="mt-10 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition"
+      >
         Выйти
       </button>
     </div>
