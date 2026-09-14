@@ -65,4 +65,12 @@ public class GoalController {
 
         return ResponseEntity.ok().build();
     }
+    @DeleteMapping("/{goalId}")
+    public ResponseEntity<Void> deleteGoal(@PathVariable Long goalId, Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        goalService.deleteGoal(goalId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
 }

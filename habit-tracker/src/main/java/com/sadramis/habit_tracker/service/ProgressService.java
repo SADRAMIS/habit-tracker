@@ -1,6 +1,7 @@
 package com.sadramis.habit_tracker.service;
 
 import com.sadramis.habit_tracker.dto.GoalCompletedEvent;
+import com.sadramis.habit_tracker.dto.ProgressDto;
 import com.sadramis.habit_tracker.dto.ProgressRequest;
 
 import com.sadramis.habit_tracker.exception.GoalNotFoundException;
@@ -13,6 +14,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 @Service
 public class ProgressService {
@@ -53,5 +56,16 @@ public class ProgressService {
             String json = objectMapper.writeValueAsString(event);
             kafkaTemplate.send("goal-events", goal.getId().toString(), json);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProgressDto> getProgressHistory(Long goalId, Long userId) {
+        // Проверяем, что цель принадлежит пользователю
+        goalRepository.findByIdAndUser_Id(goalId, userId)
+                .orElseThrow(() -> new GoalNotFoundException("Цель не найдена"));
+
+        return progressRepository.findByGoal_IdOrderByDateDesc(goalId).stream()
+                .map(p -> new ProgressDto(p.getId(), p.getProgressValue(), p.getDate()))
+                .toList();
     }
 }

@@ -140,4 +140,13 @@ public class GoalService {
             log.info("Цель {} уже была COMPLETED, пропускаем", goalId);
         }
     }
+
+    @Transactional
+    @CacheEvict(value = "user_goals", key = "#userId")
+    public void deleteGoal(Long goalId, Long userId) {
+        Goal goal = goalRepository.findByIdAndUser_Id(goalId, userId)
+                .orElseThrow(() -> new GoalNotFoundException("Цель не найдена"));
+        goalRepository.delete(goal);
+        log.info("Цель {} пользователя {} удалена", goalId, userId);
+    }
 }
