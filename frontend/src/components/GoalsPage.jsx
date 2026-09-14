@@ -159,12 +159,19 @@ export default function GoalsPage({ onLogout }) {
         </div>
       )}
 
-      <button
-        onClick={handleLogout}
-        className="mt-10 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition"
-      >
-        Выйти
-      </button>
-    </div>
+      <div className="mt-10 flex gap-3">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition"
+        >
+          Статистика
+        </button>
+        <button
+          onClick={handleLogout}
+          className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition"
+        >
+          Выйти
+        </button>
+      </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './components/LoginPage';
 import GoalsPage from './components/GoalsPage';
+import DashboardPage from './components/DashboardPage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -21,6 +22,7 @@ function App() {
       <Routes>
         <Route path="/" element={token ? <Navigate to="/goals" /> : <LoginPage onLogin={handleLogin} />} />
         <Route path="/goals" element={token ? <GoalsPage onLogout={handleLogout} /> : <Navigate to="/" />} />
+        <Route path="/dashboard" element={token ? <DashboardPage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
