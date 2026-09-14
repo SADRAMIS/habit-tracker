@@ -32,9 +32,12 @@ export const api = {
   register: (data) => request('/users/register', { method: 'POST', body: JSON.stringify(data) }),
   login: (data) => request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   getGoals: () => request('/goals'),
+  getGoalById: (goalId) => request(`/goals/${goalId}`),          // <-- ЭТОГО НЕ ХВАТАЛО
   createGoal: (data) => request('/goals', { method: 'POST', body: JSON.stringify(data) }),
+  completeGoal: (goalId) => request(`/goals/${goalId}/complete`, { method: 'POST' }),
+  deleteGoal: (goalId) => request(`/goals/${goalId}`, { method: 'DELETE' }),
   addProgress: (data) => request('/progress', { method: 'POST', body: JSON.stringify(data) }),
+  getProgressHistory: (goalId) => request(`/progress/${goalId}`),
   startExport: () => request('/export/goals', { method: 'POST' }),
   getExport: (taskId) => request(`/export/${taskId}`),
-  completeGoal: (goalId) => request(`/goals/${goalId}/complete`, { method: 'POST' }),
 };

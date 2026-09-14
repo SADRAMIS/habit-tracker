@@ -143,7 +143,12 @@ export default function GoalsPage({ onLogout }) {
           {filteredGoals.map((goal) => (
             <div key={goal.id} className="bg-white rounded-xl shadow-md p-5">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-bold text-gray-800">{goal.title}</h3>
+                <h3
+                  onClick={() => navigate(`/goals/${goal.id}`)}
+                  className="text-xl font-bold text-gray-800 cursor-pointer hover:text-blue-600 transition"
+                >
+                  {goal.title}
+                </h3>
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(goal.status)}`}>
                   {goal.status}
                 </span>
