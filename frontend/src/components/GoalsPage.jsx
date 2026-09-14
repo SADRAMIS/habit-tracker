@@ -12,6 +12,10 @@ export default function GoalsPage({ onLogout }) {
   const [progressValues, setProgressValues] = useState({});
   const [loadingGoalId, setLoadingGoalId] = useState(null);
 
+  // Новые состояния для поиска и фильтров
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
   const loadGoals = async () => {
     const data = await api.getGoals();
     setGoals(data);
@@ -84,12 +88,21 @@ export default function GoalsPage({ onLogout }) {
     return 'bg-yellow-100 text-yellow-700';
   };
 
+  // Логика фильтрации
+  const filteredGoals = goals.filter((goal) => {
+    const matchesSearch =
+      goal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (goal.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || goal.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="max-w-4xl mx-auto p-4 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Мои цели</h1>
 
       {/* Форма создания */}
-      <form onSubmit={handleCreateGoal} className="bg-white rounded-xl shadow-md p-6 mb-8">
+      <form onSubmit={handleCreateGoal} className="bg-white rounded-xl shadow-md p-6 mb-6">
         <h3 className="text-xl font-semibold text-gray-700 mb-4">Новая цель</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input placeholder="Название" value={title} onChange={(e) => setTitle(e.target.value)} required className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -101,12 +114,33 @@ export default function GoalsPage({ onLogout }) {
         </button>
       </form>
 
+      {/* Поиск и фильтры */}
+      <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="Поиск по названию или описанию..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="flex gap-2 flex-wrap">
+            <FilterButton active={statusFilter === 'ALL'} onClick={() => setStatusFilter('ALL')}>Все</FilterButton>
+            <FilterButton active={statusFilter === 'IN_PROGRESS'} onClick={() => setStatusFilter('IN_PROGRESS')}>Активные</FilterButton>
+            <FilterButton active={statusFilter === 'COMPLETED'} onClick={() => setStatusFilter('COMPLETED')}>Завершённые</FilterButton>
+            <FilterButton active={statusFilter === 'EXPIRED'} onClick={() => setStatusFilter('EXPIRED')}>Просроченные</FilterButton>
+          </div>
+        </div>
+      </div>
+
       {/* Список целей */}
-      {goals.length === 0 ? (
-        <p className="text-center text-gray-500 mt-10">Пока нет целей. Создайте первую!</p>
+      {filteredGoals.length === 0 ? (
+        <p className="text-center text-gray-500 mt-10">
+          {goals.length === 0 ? 'Пока нет целей. Создайте первую!' : 'Ничего не найдено по вашему запросу.'}
+        </p>
       ) : (
         <div className="space-y-4">
-          {goals.map((goal) => (
+          {filteredGoals.map((goal) => (
             <div key={goal.id} className="bg-white rounded-xl shadow-md p-5">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-xl font-bold text-gray-800">{goal.title}</h3>
@@ -116,7 +150,6 @@ export default function GoalsPage({ onLogout }) {
               </div>
               <p className="text-gray-600 mb-4">{goal.description}</p>
 
-              {/* Прогресс-бар */}
               <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                 <div
                   className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
@@ -127,7 +160,6 @@ export default function GoalsPage({ onLogout }) {
                 Прогресс: {goal.currentValue} / {goal.targetValue}
               </p>
 
-              {/* Кнопки действий */}
               {goal.status === 'IN_PROGRESS' && (
                 <div className="flex flex-col gap-3">
                   <button
@@ -173,5 +205,21 @@ export default function GoalsPage({ onLogout }) {
           Выйти
         </button>
       </div>
+    </div>
+  );
+}
+
+function FilterButton({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+        active
+          ? 'bg-blue-600 text-white shadow-md'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
