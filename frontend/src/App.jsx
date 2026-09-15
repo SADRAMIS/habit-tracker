@@ -4,6 +4,7 @@ import LoginPage from './components/LoginPage';
 import GoalsPage from './components/GoalsPage';
 import DashboardPage from './components/DashboardPage';
 import GoalDetailPage from './components/GoalDetailPage';
+import ExportPage from './components/ExportPage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -25,6 +26,7 @@ function App() {
         <Route path="/goals" element={token ? <GoalsPage onLogout={handleLogout} /> : <Navigate to="/" />} />
         <Route path="/dashboard" element={token ? <DashboardPage /> : <Navigate to="/" />} />
         <Route path="/goals/:id" element={token ? <GoalDetailPage /> : <Navigate to="/" />} />
+        <Route path="/export" element={token ? <ExportPage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

@@ -196,21 +196,27 @@ export default function GoalsPage({ onLogout }) {
         </div>
       )}
 
-      <div className="mt-10 flex gap-3">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition"
-        >
-          Статистика
-        </button>
-        <button
-          onClick={handleLogout}
-          className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition"
-        >
-          Выйти
-        </button>
-      </div>
-    </div>
+            <div className="mt-10 flex gap-3 flex-wrap">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition"
+              >
+                Статистика
+              </button>
+              <button
+                onClick={() => navigate('/export')}
+                className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition"
+              >
+                Экспорт
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 min-w-[120px] bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition"
+              >
+                Выйти
+              </button>
+            </div>
+          </div>
   );
 }
 

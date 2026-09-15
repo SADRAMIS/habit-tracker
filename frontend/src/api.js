@@ -27,6 +27,23 @@ async function request(path, options = {}) {
 
   return response.json();
 }
+async function requestText(path, options = {}) {
+  const headers = { ...options.headers };
+  const token = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const response = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    }
+    throw new Error('Ошибка запроса');
+  }
+
+  return response.text();
+}
 
 export const api = {
   register: (data) => request('/users/register', { method: 'POST', body: JSON.stringify(data) }),
@@ -40,4 +57,5 @@ export const api = {
   getProgressHistory: (goalId) => request(`/progress/${goalId}`),
   startExport: () => request('/export/goals', { method: 'POST' }),
   getExport: (taskId) => request(`/export/${taskId}`),
+  getExportRaw: (taskId) => requestText(`/export/${taskId}`),
 };
