@@ -102,7 +102,7 @@ export default function GoalsPage({ onLogout }) {
       <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Мои цели</h1>
 
       {/* Форма создания */}
-      <form onSubmit={handleCreateGoal} className="bg-white rounded-xl shadow-md p-6 mb-6">
+      <form onSubmit={handleCreateGoal} className="bg-white rounded-xl shadow-md p-6 mb-6 animate-fade-in">
         <h3 className="text-xl font-semibold text-gray-700 mb-4">Новая цель</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input placeholder="Название" value={title} onChange={(e) => setTitle(e.target.value)} required className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -115,7 +115,7 @@ export default function GoalsPage({ onLogout }) {
       </form>
 
       {/* Поиск и фильтры */}
-      <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+      <div className="bg-white rounded-xl shadow-md p-4 mb-6 animate-fade-in">
         <div className="flex flex-col md:flex-row gap-3">
           <input
             type="text"
@@ -140,8 +140,12 @@ export default function GoalsPage({ onLogout }) {
         </p>
       ) : (
         <div className="space-y-4">
-          {filteredGoals.map((goal) => (
-            <div key={goal.id} className="bg-white rounded-xl shadow-md p-5">
+          {filteredGoals.map((goal, index) => (
+            <div
+              key={goal.id}
+              className="bg-white rounded-xl shadow-md p-5 animate-fade-in-up hover:shadow-lg transition-shadow duration-300"
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
               <div className="flex justify-between items-start mb-2">
                 <h3
                   onClick={() => navigate(`/goals/${goal.id}`)}
@@ -157,7 +161,7 @@ export default function GoalsPage({ onLogout }) {
 
               <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                 <div
-                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${Math.min((goal.currentValue / goal.targetValue) * 100, 100)}%` }}
                 ></div>
               </div>
@@ -196,27 +200,27 @@ export default function GoalsPage({ onLogout }) {
         </div>
       )}
 
-            <div className="mt-10 flex gap-3 flex-wrap">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition"
-              >
-                Статистика
-              </button>
-              <button
-                onClick={() => navigate('/export')}
-                className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition"
-              >
-                Экспорт
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex-1 min-w-[120px] bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition"
-              >
-                Выйти
-              </button>
-            </div>
-          </div>
+      <div className="mt-10 flex gap-3 flex-wrap">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition"
+        >
+          Статистика
+        </button>
+        <button
+          onClick={() => navigate('/export')}
+          className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition"
+        >
+          Экспорт
+        </button>
+        <button
+          onClick={handleLogout}
+          className="flex-1 min-w-[120px] bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition"
+        >
+          Выйти
+        </button>
+      </div>
+    </div>
   );
 }
 

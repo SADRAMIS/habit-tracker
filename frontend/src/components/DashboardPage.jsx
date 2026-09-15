@@ -53,14 +53,22 @@ export default function DashboardPage() {
           <>
             {/* Карточки с числами */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <StatCard title="Всего целей" value={total} color="bg-blue-100 text-blue-800" />
-              <StatCard title="Завершено" value={completed} color="bg-green-100 text-green-800" />
-              <StatCard title="В процессе" value={inProgress} color="bg-yellow-100 text-yellow-800" />
-              <StatCard title="Просрочено" value={expired} color="bg-red-100 text-red-800" />
+              <div className="animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+                <StatCard title="Всего целей" value={total} color="bg-blue-100 text-blue-800" />
+              </div>
+              <div className="animate-fade-in-up" style={{ animationDelay: '80ms' }}>
+                <StatCard title="Завершено" value={completed} color="bg-green-100 text-green-800" />
+              </div>
+              <div className="animate-fade-in-up" style={{ animationDelay: '160ms' }}>
+                <StatCard title="В процессе" value={inProgress} color="bg-yellow-100 text-yellow-800" />
+              </div>
+              <div className="animate-fade-in-up" style={{ animationDelay: '240ms' }}>
+                <StatCard title="Просрочено" value={expired} color="bg-red-100 text-red-800" />
+              </div>
             </div>
 
             {/* Общий прогресс */}
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white rounded-xl shadow-md p-6 animate-fade-in">
               <h2 className="text-xl font-semibold text-gray-700 mb-4">Общий прогресс</h2>
               <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
                 <div
