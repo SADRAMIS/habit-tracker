@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { showToast } from './Toast';
 
 export default function ExportPage() {
   const navigate = useNavigate();
@@ -11,7 +12,6 @@ export default function ExportPage() {
 
   const handleStartExport = async () => {
     setLoading(true);
-    setErrorMessage('');
     setStatus('PROCESSING');
     setCsvData(null);
     try {
@@ -19,7 +19,7 @@ export default function ExportPage() {
       const id = response?.taskId || response?.id || response;
       pollStatus(id);
     } catch (error) {
-      setErrorMessage('Не удалось запустить экспорт: ' + error.message);
+      showToast('Не удалось запустить экспорт: ' + error.message, 'error');
       setLoading(false);
     }
   };

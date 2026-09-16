@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { useNavigate } from 'react-router-dom';
+import { showToast } from './Toast';
 
 export default function GoalsPage({ onLogout }) {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function GoalsPage({ onLogout }) {
       setTargetValue('');
       await loadGoals();
     } catch (error) {
-      alert('Ошибка при создании цели: ' + error.message);
+      showToast('Ошибка при создании цели: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ export default function GoalsPage({ onLogout }) {
       }, 3000);
     } catch (error) {
       console.error('Ошибка при завершении цели:', error);
-      alert('Не удалось завершить цель');
+      showToast('Не удалось завершить цель', 'error');
       setLoadingGoalId(null);
     }
   };
@@ -64,15 +65,15 @@ export default function GoalsPage({ onLogout }) {
   const handleAddProgress = async (goalId) => {
     const value = progressValues[goalId];
     if (!value || isNaN(value)) {
-      alert('Введите число для прогресса');
+      showToast('Введите число для прогресса', 'warning');
       return;
     }
     try {
       await api.addProgress({ goalId, progressValue: parseFloat(value), date: new Date().toISOString() });
       setProgressValues((prev) => ({ ...prev, [goalId]: '' }));
-      await loadGoals();
+      showToast('Прогресс добавлен!', 'success');
     } catch (error) {
-      alert('Ошибка при добавлении прогресса: ' + error.message);
+      showToast('Ошибка при добавлении прогресса: ' + error.message, 'error');
     }
   };
 

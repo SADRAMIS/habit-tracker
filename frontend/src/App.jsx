@@ -5,6 +5,7 @@ import GoalsPage from './components/GoalsPage';
 import DashboardPage from './components/DashboardPage';
 import GoalDetailPage from './components/GoalDetailPage';
 import ExportPage from './components/ExportPage';
+import ToastContainer from './components/Toast';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -21,6 +22,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         <Route path="/" element={token ? <Navigate to="/goals" /> : <LoginPage onLogin={handleLogin} />} />
         <Route path="/goals" element={token ? <GoalsPage onLogout={handleLogout} /> : <Navigate to="/" />} />

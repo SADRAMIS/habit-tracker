@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { showToast } from './Toast';
 
 export default function GoalDetailPage() {
   const { id } = useParams();
@@ -18,7 +19,7 @@ export default function GoalDetailPage() {
         setHistory(historyData);
       } catch (error) {
         console.error('Ошибка загрузки:', error);
-        alert('Не удалось загрузить цель');
+        showToast('Не удалось загрузить цель', 'error');
         navigate('/goals');
       } finally {
         setLoading(false);
@@ -31,9 +32,10 @@ export default function GoalDetailPage() {
     if (!window.confirm('Вы уверены, что хотите удалить эту цель?')) return;
     try {
       await api.deleteGoal(id);
+      showToast('Цель удалена', 'success');
       navigate('/goals');
     } catch (error) {
-      alert('Ошибка при удалении: ' + error.message);
+      showToast('Ошибка при удалении: ' + error.message, 'error');
     }
   };
 
