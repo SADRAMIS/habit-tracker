@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api';
+import { showToast } from './Toast';
 
 export default function LoginPage({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -23,14 +24,15 @@ export default function LoginPage({ onLogin }) {
       }
     } catch (err) {
       setError(err.message);
+      showToast('Ошибка входа: ' + err.message, 'error');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">Habit Tracker</h1>
-        <h2 className="text-xl font-semibold text-center text-gray-600 mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors">
+      <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl p-8 transition-colors">
+        <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-2">Habit Tracker</h1>
+        <h2 className="text-xl font-semibold text-center text-gray-600 dark:text-gray-300 mb-8">
           {isLogin ? 'Вход' : 'Регистрация'}
         </h2>
 
@@ -41,7 +43,7 @@ export default function LoginPage({ onLogin }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
           <input
             type="password"
@@ -49,7 +51,7 @@ export default function LoginPage({ onLogin }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
           <button
             type="submit"
@@ -61,7 +63,7 @@ export default function LoginPage({ onLogin }) {
 
         <p
           onClick={() => setIsLogin(!isLogin)}
-          className="mt-6 text-center text-blue-600 cursor-pointer hover:underline"
+          className="mt-6 text-center text-blue-600 dark:text-blue-400 cursor-pointer hover:underline"
         >
           {isLogin ? 'Нет аккаунта? Зарегистрируйтесь' : 'Уже есть аккаунт? Войдите'}
         </p>

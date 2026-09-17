@@ -14,6 +14,7 @@ export default function ExportPage() {
     setLoading(true);
     setStatus('PROCESSING');
     setCsvData(null);
+    setErrorMessage('');
     try {
       const response = await api.startExport();
       const id = response?.taskId || response?.id || response;
@@ -33,7 +34,6 @@ export default function ExportPage() {
       try {
         const raw = await api.getExportRaw(id);
 
-        // Пробуем распарсить как JSON (если бэкенд возвращает статус)
         try {
           const data = JSON.parse(raw);
           const statusValue = data.exportStatus || data.status;
@@ -42,19 +42,21 @@ export default function ExportPage() {
           if (statusValue === 'DONE') {
             setCsvData(data.csvData || data.data);
             setLoading(false);
+            showToast('Экспорт готов!', 'success');
             return;
           }
           if (statusValue === 'FAILED') {
             setErrorMessage(data.errorMessage || 'Ошибка при экспорте');
+            showToast('Ошибка при экспорте', 'error');
             setLoading(false);
             return;
           }
         } catch {
-          // Не JSON → значит это уже готовый CSV
           if (raw && raw.length > 0) {
             setCsvData(raw);
             setStatus('DONE');
             setLoading(false);
+            showToast('Экспорт готов!', 'success');
             return;
           }
         }
@@ -63,10 +65,12 @@ export default function ExportPage() {
           setTimeout(check, 1500);
         } else {
           setErrorMessage('Превышено время ожидания экспорта');
+          showToast('Превышено время ожидания', 'error');
           setLoading(false);
         }
       } catch (error) {
         setErrorMessage('Ошибка при проверке статуса: ' + error.message);
+        showToast('Ошибка при проверке статуса', 'error');
         setLoading(false);
       }
     };
@@ -79,7 +83,6 @@ export default function ExportPage() {
 
     let blob;
     try {
-      // Пробуем base64
       const binary = atob(csvData);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) {
@@ -87,7 +90,6 @@ export default function ExportPage() {
       }
       blob = new Blob([bytes], { type: 'text/csv;charset=utf-8;' });
     } catch {
-      // Иначе — обычная строка
       blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
     }
 
@@ -96,21 +98,23 @@ export default function ExportPage() {
     link.download = `goals_export_${Date.now()}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
+
+    showToast('Файл скачан!', 'success');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 transition-colors">
       <div className="max-w-2xl mx-auto">
         <button
           onClick={() => navigate('/goals')}
-          className="mb-4 text-blue-600 hover:underline font-semibold"
+          className="mb-4 text-blue-600 dark:text-blue-400 hover:underline font-semibold"
         >
           ← Назад к целям
         </button>
 
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Экспорт целей</h1>
-          <p className="text-gray-600 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Экспорт целей</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
             Выгрузите все свои цели и прогресс в CSV-файл для анализа в Excel или Google Sheets.
           </p>
 
@@ -123,8 +127,8 @@ export default function ExportPage() {
           </button>
 
           {status && !errorMessage && (
-            <div className="mt-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
-              <p className="text-blue-800 font-semibold">
+            <div className="mt-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+              <p className="text-blue-800 dark:text-blue-200 font-semibold">
                 Статус:{' '}
                 {status === 'PENDING' && '⏳ Ожидание...'}
                 {status === 'PROCESSING' && '⚙️ Обработка...'}
@@ -135,8 +139,8 @@ export default function ExportPage() {
           )}
 
           {errorMessage && (
-            <div className="mt-6 p-4 rounded-lg bg-red-50 border border-red-200">
-              <p className="text-red-800 font-semibold">{errorMessage}</p>
+            <div className="mt-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
+              <p className="text-red-800 dark:text-red-200 font-semibold">{errorMessage}</p>
             </div>
           )}
 
