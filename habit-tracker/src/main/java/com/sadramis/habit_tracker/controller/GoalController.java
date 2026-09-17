@@ -2,6 +2,7 @@ package com.sadramis.habit_tracker.controller;
 
 import com.sadramis.habit_tracker.dto.GoalDto;
 import com.sadramis.habit_tracker.dto.GoalRequest;
+import com.sadramis.habit_tracker.dto.GoalUpdateRequest;
 import com.sadramis.habit_tracker.exception.UserNotFoundException;
 import com.sadramis.habit_tracker.model.User;
 import com.sadramis.habit_tracker.repository.UserRepository;
@@ -72,5 +73,16 @@ public class GoalController {
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         goalService.deleteGoal(goalId, user.getId());
         return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/{goalId}")
+    public ResponseEntity<GoalDto> updateGoal(
+            @PathVariable Long goalId,
+            @Valid @RequestBody GoalUpdateRequest request,
+            Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        GoalDto updated = goalService.updateGoal(goalId, user.getId(), request);
+        return ResponseEntity.ok(updated);
     }
 }

@@ -2,6 +2,7 @@ package com.sadramis.habit_tracker.service;
 
 import com.sadramis.habit_tracker.dto.GoalDto;
 import com.sadramis.habit_tracker.dto.GoalRequest;
+import com.sadramis.habit_tracker.dto.GoalUpdateRequest;
 import com.sadramis.habit_tracker.exception.GoalNotFoundException;
 import com.sadramis.habit_tracker.exception.UserNotFoundException;
 import com.sadramis.habit_tracker.model.Goal;
@@ -148,5 +149,34 @@ public class GoalService {
                 .orElseThrow(() -> new GoalNotFoundException("Цель не найдена"));
         goalRepository.delete(goal);
         log.info("Цель {} пользователя {} удалена", goalId, userId);
+    }
+
+    @Transactional
+    @CacheEvict(value = "user_goals", key = "#userId")
+    public GoalDto updateGoal(Long goalId, Long userId, GoalUpdateRequest request) {
+        Goal goal = goalRepository.findByIdAndUser_Id(goalId, userId)
+                .orElseThrow(() -> new GoalNotFoundException("Цель не найдена"));
+
+        goal.setTitle(request.getTitle());
+        goal.setDescription(request.getDescription());
+        goal.setTargetValue(request.getTargetValue());
+        goal.setDeadline(request.getDeadline());
+
+        Goal saved = goalRepository.save(goal);
+
+        Double sum = progressRepository.sumValueByGoalId(goalId);
+        if (sum == null) sum = 0.0;
+        String status = determineStatus(saved, sum);
+
+        return new GoalDto(
+                saved.getId(),
+                saved.getTitle(),
+                saved.getDescription(),
+                saved.getTargetValue(),
+                saved.getDeadline(),
+                status,
+                sum,
+                saved.getCreatedAt()
+        );
     }
 }
