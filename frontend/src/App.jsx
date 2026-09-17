@@ -6,6 +6,7 @@ import DashboardPage from './components/DashboardPage';
 import GoalDetailPage from './components/GoalDetailPage';
 import ExportPage from './components/ExportPage';
 import ToastContainer from './components/Toast';
+import ThemeToggle from './components/ThemeToggle';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -22,6 +23,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ThemeToggle />
       <ToastContainer />
       <Routes>
         <Route path="/" element={token ? <Navigate to="/goals" /> : <LoginPage onLogin={handleLogin} />} />
