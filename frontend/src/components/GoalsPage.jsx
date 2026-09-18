@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { showToast } from './Toast';
+import { SkeletonGoalCard } from './Skeleton';
 
 export default function GoalsPage({ onLogout }) {
   const navigate = useNavigate();
@@ -10,14 +11,19 @@ export default function GoalsPage({ onLogout }) {
   const [description, setDescription] = useState('');
   const [targetValue, setTargetValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [progressValues, setProgressValues] = useState({});
   const [loadingGoalId, setLoadingGoalId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
   const loadGoals = async () => {
-    const data = await api.getGoals();
-    setGoals(data);
+    try {
+      const data = await api.getGoals();
+      setGoals(data);
+    } finally {
+      setInitialLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -131,7 +137,13 @@ export default function GoalsPage({ onLogout }) {
         </div>
       </div>
 
-      {filteredGoals.length === 0 ? (
+      {initialLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <SkeletonGoalCard key={i} />
+          ))}
+        </div>
+      ) : filteredGoals.length === 0 ? (
         <p className="text-center text-gray-500 dark:text-gray-400 mt-10">
           {goals.length === 0 ? 'Пока нет целей. Создайте первую!' : 'Ничего не найдено по вашему запросу.'}
         </p>

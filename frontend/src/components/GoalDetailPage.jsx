@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { showToast } from './Toast';
+import { SkeletonHistoryItem } from './Skeleton';
 
 export default function GoalDetailPage() {
   const { id } = useParams();
@@ -78,7 +79,25 @@ export default function GoalDetailPage() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10 text-gray-500 dark:text-gray-400">Загрузка...</p>;
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6 animate-pulse">
+          <div className="h-8 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
+          <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+          <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full mb-2" />
+          <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-700 rounded" />
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+          <div className="h-6 w-1/3 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+          {[1, 2, 3].map((i) => (
+            <SkeletonHistoryItem key={i} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   if (!goal) return <p className="text-center mt-10 text-red-500">Цель не найдена</p>;
 
   const percent = Math.min((goal.currentValue / goal.targetValue) * 100, 100);

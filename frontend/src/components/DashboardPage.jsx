@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { SkeletonStatCard } from './Skeleton';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -47,7 +48,11 @@ export default function DashboardPage() {
         </div>
 
         {loading ? (
-          <p className="text-center text-gray-500 dark:text-gray-400 mt-10">Загрузка...</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <SkeletonStatCard key={i} />
+            ))}
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
