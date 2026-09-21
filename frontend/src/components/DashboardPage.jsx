@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
+} from 'recharts';
 import { api } from '../api';
 import { SkeletonStatCard } from './Skeleton';
 
@@ -34,9 +38,22 @@ export default function DashboardPage() {
   }, 0);
   const overallPercent = total > 0 ? Math.round((totalProgress / total) * 100) : 0;
 
+  // Данные для круговой диаграммы
+  const pieData = [
+    { name: 'Завершено', value: completed, color: '#10b981' },
+    { name: 'В процессе', value: inProgress, color: '#f59e0b' },
+    { name: 'Просрочено', value: expired, color: '#ef4444' },
+  ].filter((item) => item.value > 0);
+
+  // Данные для столбчатой диаграммы (прогресс каждой цели в %)
+  const barData = goals.map((g) => ({
+    name: g.title.length > 12 ? g.title.slice(0, 12) + '…' : g.title,
+    Прогресс: Math.round(Math.min((g.currentValue / g.targetValue) * 100, 100)),
+  }));
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 transition-colors">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Статистика</h1>
           <button
@@ -55,6 +72,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
+            {/* Карточки */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <div className="animate-fade-in-up" style={{ animationDelay: '0ms' }}>
                 <StatCard title="Всего целей" value={total} color="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" />
@@ -70,7 +88,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors">
+            {/* Общий прогресс */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors mb-6">
               <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Общий прогресс</h2>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 mb-2">
                 <div
@@ -80,6 +99,65 @@ export default function DashboardPage() {
               </div>
               <p className="text-right text-sm text-gray-600 dark:text-gray-400">{overallPercent}%</p>
             </div>
+
+            {/* Графики */}
+            {goals.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Круговая диаграмма статусов */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors">
+                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">
+                    Распределение по статусам
+                  </h2>
+                  <div style={{ width: '100%', height: 280 }}>
+                    <ResponsiveContainer>
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={4}
+                          dataKey="value"
+                          label={(entry) => `${entry.name}: ${entry.value}`}
+                        >
+                          {pieData.map((entry, index) => (
+                            <Cell key={index} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Столбчатая диаграмма прогресса */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors">
+                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">
+                    Прогресс по целям (%)
+                  </h2>
+                  <div style={{ width: '100%', height: 280 }}>
+                    <ResponsiveContainer>
+                      <BarChart data={barData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                        <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
+                        <YAxis stroke="#9ca3af" fontSize={12} domain={[0, 100]} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'rgba(31, 41, 55, 0.9)',
+                            borderRadius: '8px',
+                            border: 'none',
+                            color: '#fff',
+                          }}
+                        />
+                        <Legend />
+                        <Bar dataKey="Прогресс" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
