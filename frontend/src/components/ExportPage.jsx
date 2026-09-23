@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { showToast } from './Toast';
 
 export default function ExportPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [status, setStatus] = useState(null);
   const [csvData, setCsvData] = useState(null);
@@ -20,7 +22,7 @@ export default function ExportPage() {
       const id = response?.taskId || response?.id || response;
       pollStatus(id);
     } catch (error) {
-      showToast('Не удалось запустить экспорт: ' + error.message, 'error');
+      showToast('Error: ' + error.message, 'error');
       setLoading(false);
     }
   };
@@ -42,12 +44,12 @@ export default function ExportPage() {
           if (statusValue === 'DONE') {
             setCsvData(data.csvData || data.data);
             setLoading(false);
-            showToast('Экспорт готов!', 'success');
+            showToast('✓', 'success');
             return;
           }
           if (statusValue === 'FAILED') {
-            setErrorMessage(data.errorMessage || 'Ошибка при экспорте');
-            showToast('Ошибка при экспорте', 'error');
+            setErrorMessage(data.errorMessage || 'Error');
+            showToast('Error', 'error');
             setLoading(false);
             return;
           }
@@ -56,7 +58,7 @@ export default function ExportPage() {
             setCsvData(raw);
             setStatus('DONE');
             setLoading(false);
-            showToast('Экспорт готов!', 'success');
+            showToast('✓', 'success');
             return;
           }
         }
@@ -64,13 +66,13 @@ export default function ExportPage() {
         if (attempts < maxAttempts) {
           setTimeout(check, 1500);
         } else {
-          setErrorMessage('Превышено время ожидания экспорта');
-          showToast('Превышено время ожидания', 'error');
+          setErrorMessage('Timeout');
+          showToast('Timeout', 'error');
           setLoading(false);
         }
       } catch (error) {
-        setErrorMessage('Ошибка при проверке статуса: ' + error.message);
-        showToast('Ошибка при проверке статуса', 'error');
+        setErrorMessage('Error: ' + error.message);
+        showToast('Error', 'error');
         setLoading(false);
       }
     };
@@ -99,7 +101,7 @@ export default function ExportPage() {
     link.click();
     URL.revokeObjectURL(link.href);
 
-    showToast('Файл скачан!', 'success');
+    showToast('✓', 'success');
   };
 
   return (
@@ -109,31 +111,25 @@ export default function ExportPage() {
           onClick={() => navigate('/goals')}
           className="mb-4 text-blue-600 dark:text-blue-400 hover:underline font-semibold"
         >
-          ← Назад к целям
+          {t('back_to_goals')}
         </button>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Экспорт целей</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Выгрузите все свои цели и прогресс в CSV-файл для анализа в Excel или Google Sheets.
-          </p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{t('export_title')}</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">{t('export_description')}</p>
 
           <button
             onClick={handleStartExport}
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition"
           >
-            {loading ? 'Экспорт...' : 'Начать экспорт'}
+            {loading ? t('exporting') : t('start_export')}
           </button>
 
           {status && !errorMessage && (
             <div className="mt-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
               <p className="text-blue-800 dark:text-blue-200 font-semibold">
-                Статус:{' '}
-                {status === 'PENDING' && '⏳ Ожидание...'}
-                {status === 'PROCESSING' && '⚙️ Обработка...'}
-                {status === 'DONE' && '✅ Готово!'}
-                {status === 'FAILED' && '❌ Ошибка'}
+                Status: {status}
               </p>
             </div>
           )}
@@ -149,7 +145,7 @@ export default function ExportPage() {
               onClick={handleDownload}
               className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition"
             >
-              📥 Скачать CSV
+              {t('download_csv')}
             </button>
           )}
         </div>

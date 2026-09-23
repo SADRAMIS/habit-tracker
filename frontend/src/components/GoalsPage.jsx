@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { showToast } from './Toast';
 import { SkeletonGoalCard } from './Skeleton';
 
 export default function GoalsPage({ onLogout }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [goals, setGoals] = useState([]);
   const [title, setTitle] = useState('');
@@ -44,9 +46,9 @@ export default function GoalsPage({ onLogout }) {
       setDescription('');
       setTargetValue('');
       await loadGoals();
-      showToast('Цель создана!', 'success');
+      showToast('✓', 'success');
     } catch (error) {
-      showToast('Ошибка при создании цели: ' + error.message, 'error');
+      showToast('Error: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export default function GoalsPage({ onLogout }) {
       }, 3000);
     } catch (error) {
       console.error('Ошибка при завершении цели:', error);
-      showToast('Не удалось завершить цель', 'error');
+      showToast('Error', 'error');
       setLoadingGoalId(null);
     }
   };
@@ -70,16 +72,16 @@ export default function GoalsPage({ onLogout }) {
   const handleAddProgress = async (goalId) => {
     const value = progressValues[goalId];
     if (!value || isNaN(value)) {
-      showToast('Введите число для прогресса', 'warning');
+      showToast('Warning', 'warning');
       return;
     }
     try {
       await api.addProgress({ goalId, progressValue: parseFloat(value), date: new Date().toISOString() });
       setProgressValues((prev) => ({ ...prev, [goalId]: '' }));
-      showToast('Прогресс добавлен!', 'success');
+      showToast('✓', 'success');
       await loadGoals();
     } catch (error) {
-      showToast('Ошибка при добавлении прогресса: ' + error.message, 'error');
+      showToast('Error: ' + error.message, 'error');
     }
   };
 
@@ -105,17 +107,19 @@ export default function GoalsPage({ onLogout }) {
 
   return (
     <div className="max-w-4xl mx-auto p-4 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
-      <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-6">Мои цели</h1>
+      <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-6">
+        {t('my_goals')}
+      </h1>
 
       <form onSubmit={handleCreateGoal} className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6 animate-fade-in transition-colors">
-        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Новая цель</h3>
+        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">{t('new_goal')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input placeholder="Название" value={title} onChange={(e) => setTitle(e.target.value)} required className="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <input placeholder="Описание" value={description} onChange={(e) => setDescription(e.target.value)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <input placeholder="Целевое значение" type="number" value={targetValue} onChange={(e) => setTargetValue(e.target.value)} required className="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input placeholder={t('title')} value={title} onChange={(e) => setTitle(e.target.value)} required className="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input placeholder={t('description')} value={description} onChange={(e) => setDescription(e.target.value)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input placeholder={t('target_value')} type="number" value={targetValue} onChange={(e) => setTargetValue(e.target.value)} required className="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
         <button type="submit" disabled={loading} className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
-          {loading ? 'Создание...' : 'Создать'}
+          {loading ? t('creating') : t('create')}
         </button>
       </form>
 
@@ -123,16 +127,16 @@ export default function GoalsPage({ onLogout }) {
         <div className="flex flex-col md:flex-row gap-3">
           <input
             type="text"
-            placeholder="Поиск по названию или описанию..."
+            placeholder={t('search_placeholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <div className="flex gap-2 flex-wrap">
-            <FilterButton active={statusFilter === 'ALL'} onClick={() => setStatusFilter('ALL')}>Все</FilterButton>
-            <FilterButton active={statusFilter === 'IN_PROGRESS'} onClick={() => setStatusFilter('IN_PROGRESS')}>Активные</FilterButton>
-            <FilterButton active={statusFilter === 'COMPLETED'} onClick={() => setStatusFilter('COMPLETED')}>Завершённые</FilterButton>
-            <FilterButton active={statusFilter === 'EXPIRED'} onClick={() => setStatusFilter('EXPIRED')}>Просроченные</FilterButton>
+            <FilterButton active={statusFilter === 'ALL'} onClick={() => setStatusFilter('ALL')}>{t('filter_all')}</FilterButton>
+            <FilterButton active={statusFilter === 'IN_PROGRESS'} onClick={() => setStatusFilter('IN_PROGRESS')}>{t('filter_active')}</FilterButton>
+            <FilterButton active={statusFilter === 'COMPLETED'} onClick={() => setStatusFilter('COMPLETED')}>{t('filter_completed')}</FilterButton>
+            <FilterButton active={statusFilter === 'EXPIRED'} onClick={() => setStatusFilter('EXPIRED')}>{t('filter_expired')}</FilterButton>
           </div>
         </div>
       </div>
@@ -145,7 +149,7 @@ export default function GoalsPage({ onLogout }) {
         </div>
       ) : filteredGoals.length === 0 ? (
         <p className="text-center text-gray-500 dark:text-gray-400 mt-10">
-          {goals.length === 0 ? 'Пока нет целей. Создайте первую!' : 'Ничего не найдено по вашему запросу.'}
+          {goals.length === 0 ? t('no_goals') : t('nothing_found')}
         </p>
       ) : (
         <div className="space-y-4">
@@ -175,7 +179,7 @@ export default function GoalsPage({ onLogout }) {
                 ></div>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Прогресс: {goal.currentValue} / {goal.targetValue}
+                {t('progress')}: {goal.currentValue} / {goal.targetValue}
               </p>
 
               {goal.status === 'IN_PROGRESS' && (
@@ -185,12 +189,12 @@ export default function GoalsPage({ onLogout }) {
                     disabled={loadingGoalId === goal.id}
                     className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50"
                   >
-                    {loadingGoalId === goal.id ? 'Обработка...' : 'Завершить'}
+                    {loadingGoalId === goal.id ? t('processing') : t('complete')}
                   </button>
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="Сколько добавить?"
+                      placeholder={t('add_placeholder')}
                       value={progressValues[goal.id] || ''}
                       onChange={(e) => setProgressValues((prev) => ({ ...prev, [goal.id]: e.target.value }))}
                       className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -199,7 +203,7 @@ export default function GoalsPage({ onLogout }) {
                       onClick={() => handleAddProgress(goal.id)}
                       className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition"
                     >
-                      Добавить
+                      {t('add')}
                     </button>
                   </div>
                 </div>
@@ -210,9 +214,10 @@ export default function GoalsPage({ onLogout }) {
       )}
 
       <div className="mt-10 flex gap-3 flex-wrap">
-        <button onClick={() => navigate('/dashboard')} className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">Статистика</button>
-        <button onClick={() => navigate('/export')} className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition">Экспорт</button>
-        <button onClick={handleLogout} className="flex-1 min-w-[120px] bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition">Выйти</button>
+        <button onClick={() => navigate('/dashboard')} className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">{t('statistics')}</button>
+        <button onClick={() => navigate('/export')} className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition">{t('export')}</button>
+        <button onClick={() => navigate('/profile')} className="flex-1 min-w-[120px] bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition">{t('profile')}</button>
+        <button onClick={handleLogout} className="flex-1 min-w-[120px] bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition">{t('logout')}</button>
       </div>
     </div>
   );

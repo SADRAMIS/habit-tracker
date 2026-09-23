@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { showToast } from './Toast';
 import { SkeletonHistoryItem } from './Skeleton';
 
 export default function GoalDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [goal, setGoal] = useState(null);
@@ -27,7 +29,7 @@ export default function GoalDetailPage() {
         setHistory(historyData);
       } catch (error) {
         console.error('Ошибка загрузки:', error);
-        showToast('Не удалось загрузить цель', 'error');
+        showToast('Error', 'error');
         navigate('/goals');
       } finally {
         setLoading(false);
@@ -60,22 +62,22 @@ export default function GoalDetailPage() {
       });
       setGoal(updated);
       setIsEditing(false);
-      showToast('Цель обновлена!', 'success');
+      showToast('✓', 'success');
     } catch (error) {
-      showToast('Ошибка при сохранении: ' + error.message, 'error');
+      showToast('Error: ' + error.message, 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту цель?')) return;
+    if (!window.confirm('OK?')) return;
     try {
       await api.deleteGoal(id);
-      showToast('Цель удалена', 'success');
+      showToast('✓', 'success');
       navigate('/goals');
     } catch (error) {
-      showToast('Ошибка при удалении: ' + error.message, 'error');
+      showToast('Error: ' + error.message, 'error');
     }
   };
 
@@ -98,7 +100,7 @@ export default function GoalDetailPage() {
     </div>
   );
 
-  if (!goal) return <p className="text-center mt-10 text-red-500">Цель не найдена</p>;
+  if (!goal) return <p className="text-center mt-10 text-red-500">Not found</p>;
 
   const percent = Math.min((goal.currentValue / goal.targetValue) * 100, 100);
 
@@ -109,7 +111,7 @@ export default function GoalDetailPage() {
           onClick={() => navigate('/goals')}
           className="mb-4 text-blue-600 dark:text-blue-400 hover:underline font-semibold"
         >
-          ← Назад к целям
+          {t('back_to_goals')}
         </button>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6 animate-fade-in transition-colors">
@@ -132,7 +134,7 @@ export default function GoalDetailPage() {
             ></div>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Прогресс: {goal.currentValue} / {goal.targetValue} ({Math.round(percent)}%)
+            {t('progress')}: {goal.currentValue} / {goal.targetValue} ({Math.round(percent)}%)
           </p>
 
           {!isEditing ? (
@@ -141,20 +143,20 @@ export default function GoalDetailPage() {
                 onClick={startEditing}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
               >
-                ✏️ Редактировать
+                {t('edit')}
               </button>
               <button
                 onClick={handleDelete}
                 className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition"
               >
-                🗑️ Удалить цель
+                {t('delete_goal')}
               </button>
             </div>
           ) : (
             <form onSubmit={handleSave} className="space-y-4 border-t dark:border-gray-700 pt-4 mt-4">
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Редактирование цели</h3>
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{t('editing_goal')}</h3>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Название</label>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{t('title')}</label>
                 <input
                   type="text"
                   value={editTitle}
@@ -164,7 +166,7 @@ export default function GoalDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Описание</label>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{t('description')}</label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
@@ -174,7 +176,7 @@ export default function GoalDetailPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Целевое значение</label>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{t('target_value')}</label>
                   <input
                     type="number"
                     step="any"
@@ -185,7 +187,7 @@ export default function GoalDetailPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Дедлайн</label>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{t('deadline')}</label>
                   <input
                     type="datetime-local"
                     value={editDeadline}
@@ -201,14 +203,14 @@ export default function GoalDetailPage() {
                   disabled={saving}
                   className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg transition"
                 >
-                  {saving ? 'Сохранение...' : '💾 Сохранить'}
+                  {saving ? t('saving') : t('save')}
                 </button>
                 <button
                   type="button"
                   onClick={cancelEditing}
                   className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg transition"
                 >
-                  Отмена
+                  {t('cancel')}
                 </button>
               </div>
             </form>
@@ -216,9 +218,9 @@ export default function GoalDetailPage() {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">История прогресса</h2>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">{t('history')}</h2>
           {history.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">Прогресс ещё не добавлялся</p>
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">{t('no_history')}</p>
           ) : (
             <ul className="space-y-2">
               {history.map((entry) => (
@@ -227,7 +229,7 @@ export default function GoalDetailPage() {
                   className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 py-2 last:border-0"
                 >
                   <span className="text-gray-600 dark:text-gray-300">
-                    {new Date(entry.date).toLocaleString('ru-RU')}
+                    {new Date(entry.date).toLocaleString()}
                   </span>
                   <span className="font-semibold text-blue-600 dark:text-blue-400">
                     +{entry.progressValue}

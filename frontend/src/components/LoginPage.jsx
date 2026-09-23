@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api';
 import { showToast } from './Toast';
 
 export default function LoginPage({ onLogin }) {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,22 +26,24 @@ export default function LoginPage({ onLogin }) {
       }
     } catch (err) {
       setError(err.message);
-      showToast('Ошибка входа: ' + err.message, 'error');
+      showToast('Error: ' + err.message, 'error');
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors">
       <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl p-8 transition-colors">
-        <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-2">Habit Tracker</h1>
+        <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-2">
+          {t('app_name')}
+        </h1>
         <h2 className="text-xl font-semibold text-center text-gray-600 dark:text-gray-300 mb-8">
-          {isLogin ? 'Вход' : 'Регистрация'}
+          {isLogin ? t('login') : t('register')}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
-            placeholder="Email"
+            placeholder={t('email')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -47,7 +51,7 @@ export default function LoginPage({ onLogin }) {
           />
           <input
             type="password"
-            placeholder="Пароль"
+            placeholder={t('password')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -57,7 +61,7 @@ export default function LoginPage({ onLogin }) {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
           >
-            {isLogin ? 'Войти' : 'Зарегистрироваться'}
+            {isLogin ? t('login_button') : t('register_button')}
           </button>
         </form>
 
@@ -65,7 +69,7 @@ export default function LoginPage({ onLogin }) {
           onClick={() => setIsLogin(!isLogin)}
           className="mt-6 text-center text-blue-600 dark:text-blue-400 cursor-pointer hover:underline"
         >
-          {isLogin ? 'Нет аккаунта? Зарегистрируйтесь' : 'Уже есть аккаунт? Войдите'}
+          {isLogin ? t('no_account') : t('have_account')}
         </p>
 
         {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
