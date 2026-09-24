@@ -28,9 +28,18 @@ export default function GoalsPage({ onLogout }) {
     }
   };
 
-  useEffect(() => {
-    loadGoals();
-  }, []);
+      useEffect(() => {
+        loadGoals();
+
+        const interval = setInterval(() => {
+          // Обновляем только если вкладка активна
+          if (!document.hidden) {
+            loadGoals();
+          }
+        }, 10000);
+
+        return () => clearInterval(interval);
+      }, []);
 
   const handleCreateGoal = async (e) => {
     e.preventDefault();
