@@ -14,19 +14,28 @@ export default function DashboardPage() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await api.getGoals();
-        setGoals(data);
-      } catch (error) {
-        console.error('Ошибка загрузки целей:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+    useEffect(() => {
+      const load = async () => {
+        try {
+          const data = await api.getGoals();
+          setGoals(data);
+        } catch (error) {
+          console.error('Ошибка загрузки целей:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      load();
+
+      const interval = setInterval(() => {
+        if (!document.hidden) {
+          load();
+        }
+      }, 15000);
+
+      return () => clearInterval(interval);
+    }, []);
 
   const total = goals.length;
   const completed = goals.filter(g => g.status === 'COMPLETED').length;

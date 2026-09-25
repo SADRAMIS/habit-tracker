@@ -18,28 +18,31 @@ export default function GoalsPage({ onLogout }) {
   const [loadingGoalId, setLoadingGoalId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [refreshing, setRefreshing] = useState(false);
 
   const loadGoals = async () => {
     try {
+      setRefreshing(true);
       const data = await api.getGoals();
       setGoals(data);
     } finally {
       setInitialLoading(false);
+      setRefreshing(false);
     }
   };
 
-      useEffect(() => {
+  useEffect(() => {
+    loadGoals();
+
+    const interval = setInterval(() => {
+      // Обновляем только если вкладка активна
+      if (!document.hidden) {
         loadGoals();
+      }
+    }, 10000);
 
-        const interval = setInterval(() => {
-          // Обновляем только если вкладка активна
-          if (!document.hidden) {
-            loadGoals();
-          }
-        }, 10000);
-
-        return () => clearInterval(interval);
-      }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCreateGoal = async (e) => {
     e.preventDefault();
@@ -116,9 +119,16 @@ export default function GoalsPage({ onLogout }) {
 
   return (
     <div className="max-w-4xl mx-auto p-4 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
-      <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-6">
-        {t('my_goals')}
-      </h1>
+      <div className="flex justify-center items-center gap-3 mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+          {t('my_goals')}
+        </h1>
+        {refreshing && !initialLoading && (
+          <span className="text-xl text-blue-500 dark:text-blue-400 animate-pulse" title="Обновление...">
+            ↻
+          </span>
+        )}
+      </div>
 
       <form onSubmit={handleCreateGoal} className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6 animate-fade-in transition-colors">
         <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">{t('new_goal')}</h3>
