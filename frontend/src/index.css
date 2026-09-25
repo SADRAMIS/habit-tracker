@@ -40,3 +40,57 @@
     transform: scale(1);
   }
 }
+
+/* React Big Calendar — Dark theme overrides */
+.dark .rbc-calendar,
+.dark .rbc-month-view,
+.dark .rbc-time-view,
+.dark .rbc-agenda-view {
+  background-color: #1f2937;
+  color: #e5e7eb;
+}
+
+.dark .rbc-header,
+.dark .rbc-month-row,
+.dark .rbc-day-bg,
+.dark .rbc-time-header,
+.dark .rbc-time-content,
+.dark .rbc-timeslot-group,
+.dark .rbc-time-header-content {
+  border-color: #374151;
+}
+
+.dark .rbc-off-range-bg {
+  background-color: #111827;
+}
+
+.dark .rbc-today {
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+.dark .rbc-btn-group button {
+  color: #e5e7eb;
+  border-color: #374151;
+  background-color: #1f2937;
+}
+
+.dark .rbc-btn-group button:hover {
+  background-color: #374151;
+}
+
+.dark .rbc-toolbar button.rbc-active {
+  background-color: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.dark .rbc-agenda-view table.rbc-agenda-table tbody > tr > td,
+.dark .rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+.dark .rbc-agenda-date-cell,
+.dark .rbc-agenda-time-cell {
+  color: #d1d5db;
+}
