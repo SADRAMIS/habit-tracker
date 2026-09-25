@@ -4,6 +4,7 @@ import { api } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { showToast } from './Toast';
 import { SkeletonGoalCard } from './Skeleton';
+import { getDaysLeft, isDeadlineSoon, formatDaysLeft } from '../utils/dateUtils';
 
 export default function GoalsPage({ onLogout }) {
   const { t } = useTranslation();
@@ -35,7 +36,6 @@ export default function GoalsPage({ onLogout }) {
     loadGoals();
 
     const interval = setInterval(() => {
-      // Обновляем только если вкладка активна
       if (!document.hidden) {
         loadGoals();
       }
@@ -175,7 +175,13 @@ export default function GoalsPage({ onLogout }) {
           {filteredGoals.map((goal, index) => (
             <div
               key={goal.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 animate-fade-in-up hover:shadow-lg transition-shadow duration-300"
+              className={`rounded-xl shadow-md p-5 animate-fade-in-up hover:shadow-lg transition-shadow duration-300 bg-white dark:bg-gray-800 ${
+                isDeadlineSoon(goal)
+                  ? getDaysLeft(goal.deadline) <= 1
+                    ? 'border-2 border-red-400 dark:border-red-700'
+                    : 'border-2 border-orange-400 dark:border-orange-700'
+                  : ''
+              }`}
               style={{ animationDelay: `${index * 60}ms` }}
             >
               <div className="flex justify-between items-start mb-2">
@@ -185,9 +191,20 @@ export default function GoalsPage({ onLogout }) {
                 >
                   {goal.title}
                 </h3>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(goal.status)}`}>
-                  {goal.status}
-                </span>
+                <div className="flex flex-col items-end gap-1">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(goal.status)}`}>
+                    {goal.status}
+                  </span>
+                  {isDeadlineSoon(goal) && (
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                      getDaysLeft(goal.deadline) <= 1
+                        ? 'bg-red-500 text-white'
+                        : 'bg-orange-500 text-white'
+                    }`}>
+                      ⏰ {formatDaysLeft(getDaysLeft(goal.deadline), t)}
+                    </span>
+                  )}
+                </div>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-4">{goal.description}</p>
 
@@ -197,9 +214,12 @@ export default function GoalsPage({ onLogout }) {
                   style={{ width: `${Math.min((goal.currentValue / goal.targetValue) * 100, 100)}%` }}
                 ></div>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                {t('progress')}: {goal.currentValue} / {goal.targetValue}
-              </p>
+              <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+                <span>{t('progress')}: {goal.currentValue} / {goal.targetValue}</span>
+                <span className={isDeadlineSoon(goal) ? 'text-orange-600 dark:text-orange-400 font-semibold' : ''}>
+                  {new Date(goal.deadline).toLocaleDateString()}
+                </span>
+              </div>
 
               {goal.status === 'IN_PROGRESS' && (
                 <div className="flex flex-col gap-3">

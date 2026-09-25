@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { api } from '../api';
 import { SkeletonStatCard } from './Skeleton';
+import { getDaysLeft, isDeadlineSoon, formatDaysLeft } from '../utils/dateUtils';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -14,28 +15,28 @@ export default function DashboardPage() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-      const load = async () => {
-        try {
-          const data = await api.getGoals();
-          setGoals(data);
-        } catch (error) {
-          console.error('Ошибка загрузки целей:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await api.getGoals();
+        setGoals(data);
+      } catch (error) {
+        console.error('Ошибка загрузки целей:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      load();
+    load();
 
-      const interval = setInterval(() => {
-        if (!document.hidden) {
-          load();
-        }
-      }, 15000);
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        load();
+      }
+    }, 15000);
 
-      return () => clearInterval(interval);
-    }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   const total = goals.length;
   const completed = goals.filter(g => g.status === 'COMPLETED').length;
@@ -48,6 +49,11 @@ export default function DashboardPage() {
     return acc + Math.min(current / target, 1);
   }, 0);
   const overallPercent = total > 0 ? Math.round((totalProgress / total) * 100) : 0;
+
+  // Цели с ближайшими дедлайнами (0-3 дня, отсортированы по дедлайну)
+  const upcomingGoals = goals
+    .filter((g) => isDeadlineSoon(g))
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
   const pieData = [
     { name: t('completed'), value: completed, color: '#10b981' },
@@ -105,6 +111,51 @@ export default function DashboardPage() {
                 ></div>
               </div>
               <p className="text-right text-sm text-gray-600 dark:text-gray-400">{overallPercent}%</p>
+            </div>
+
+            {/* Ближайшие дедлайны */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors mb-6">
+              <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">
+                ⏰ {t('upcoming_deadlines')}
+              </h2>
+
+              {upcomingGoals.length === 0 ? (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                  {t('no_upcoming_deadlines')}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingGoals.map((goal) => {
+                    const days = getDaysLeft(goal.deadline);
+                    const isUrgent = days <= 1;
+                    return (
+                      <div
+                        key={goal.id}
+                        onClick={() => navigate(`/goals/${goal.id}`)}
+                        className={`flex justify-between items-center p-3 rounded-lg cursor-pointer transition ${
+                          isUrgent
+                            ? 'bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/50'
+                            : 'bg-orange-50 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900/50'
+                        }`}
+                      >
+                        <div>
+                          <p className="font-semibold text-gray-800 dark:text-white">{goal.title}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(goal.deadline).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          isUrgent
+                            ? 'bg-red-500 text-white'
+                            : 'bg-orange-500 text-white'
+                        }`}>
+                          {formatDaysLeft(days, t)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {goals.length > 0 && (
