@@ -3,14 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { showToast } from './Toast';
+import { generateGoalsPDF } from '../utils/pdfExport';
 
 export default function ExportPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [status, setStatus] = useState(null);
   const [csvData, setCsvData] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const handleStartExport = async () => {
     setLoading(true);
@@ -104,6 +106,24 @@ export default function ExportPage() {
     showToast('✓', 'success');
   };
 
+  const handleExportPDF = async () => {
+    setPdfLoading(true);
+    try {
+      const goals = await api.getGoals();
+      if (!goals || goals.length === 0) {
+        showToast('No goals to export', 'warning');
+        setPdfLoading(false);
+        return;
+      }
+      generateGoalsPDF(goals, t, i18n.language);
+      showToast('✓', 'success');
+    } catch (error) {
+      showToast('Error: ' + error.message, 'error');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 transition-colors">
       <div className="max-w-2xl mx-auto">
@@ -114,17 +134,27 @@ export default function ExportPage() {
           {t('back_to_goals')}
         </button>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors mb-6">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{t('export_title')}</h1>
           <p className="text-gray-600 dark:text-gray-300 mb-6">{t('export_description')}</p>
 
-          <button
-            onClick={handleStartExport}
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition"
-          >
-            {loading ? t('exporting') : t('start_export')}
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={handleStartExport}
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition"
+            >
+              {loading ? t('exporting') : `📊 ${t('start_export')} (CSV)`}
+            </button>
+
+            <button
+              onClick={handleExportPDF}
+              disabled={pdfLoading}
+              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition"
+            >
+              {pdfLoading ? '...' : t('export_pdf')}
+            </button>
+          </div>
 
           {status && !errorMessage && (
             <div className="mt-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
