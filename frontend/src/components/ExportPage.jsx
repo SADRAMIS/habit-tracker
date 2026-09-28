@@ -106,23 +106,23 @@ export default function ExportPage() {
     showToast('✓', 'success');
   };
 
-  const handleExportPDF = async () => {
-    setPdfLoading(true);
-    try {
-      const goals = await api.getGoals();
-      if (!goals || goals.length === 0) {
-        showToast('No goals to export', 'warning');
+    const handleExportPDF = async () => {
+      setPdfLoading(true);
+      try {
+        const goals = await api.getGoals();
+        if (!goals || goals.length === 0) {
+          showToast('No goals to export', 'warning');
+          setPdfLoading(false);
+          return;
+        }
+        await generateGoalsPDF(goals, t, i18n.language);  // ← добавили await
+        showToast('✓', 'success');
+      } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+      } finally {
         setPdfLoading(false);
-        return;
       }
-      generateGoalsPDF(goals, t, i18n.language);
-      showToast('✓', 'success');
-    } catch (error) {
-      showToast('Error: ' + error.message, 'error');
-    } finally {
-      setPdfLoading(false);
-    }
-  };
+    };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 transition-colors">
