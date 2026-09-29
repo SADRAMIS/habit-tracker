@@ -59,4 +59,5 @@ export const api = {
   getExport: (taskId) => request(`/export/${taskId}`),
   getExportRaw: (taskId) => requestText(`/export/${taskId}`),
   updateGoal: (goalId, data) => request(`/goals/${goalId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  getAllProgress: () => request('/progress/all'),
 };

@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
+  LineChart, Line
 } from 'recharts';
 import { api } from '../api';
 import { SkeletonStatCard } from './Skeleton';
@@ -13,6 +14,7 @@ export default function DashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [goals, setGoals] = useState([]);
+  const [progressHistory, setProgressHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +40,18 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const loadProgress = async () => {
+      try {
+        const data = await api.getAllProgress();
+        setProgressHistory(data);
+      } catch (error) {
+        console.error('Ошибка загрузки истории прогресса:', error);
+      }
+    };
+    loadProgress();
+  }, []);
+
   const total = goals.length;
   const completed = goals.filter(g => g.status === 'COMPLETED').length;
   const inProgress = goals.filter(g => g.status === 'IN_PROGRESS').length;
@@ -54,6 +68,24 @@ export default function DashboardPage() {
   const upcomingGoals = goals
     .filter((g) => isDeadlineSoon(g))
     .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+  // Агрегируем прогресс по дням
+  const progressByDate = progressHistory.reduce((acc, entry) => {
+    const date = new Date(entry.date).toISOString().slice(0, 10);
+    acc[date] = (acc[date] || 0) + (entry.progressValue || 0);
+    return acc;
+  }, {});
+
+  // Кумулятивная сумма (накопительно по дням)
+  const sortedDates = Object.keys(progressByDate).sort();
+  let cumulative = 0;
+  const lineData = sortedDates.map((date) => {
+    cumulative += progressByDate[date];
+    return {
+      date: new Date(date).toLocaleDateString(),
+      Прогресс: cumulative,
+    };
+  });
 
   const pieData = [
     { name: t('completed'), value: completed, color: '#10b981' },
@@ -210,6 +242,41 @@ export default function DashboardPage() {
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* График прогресса по дням */}
+            {lineData.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors mt-6">
+                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">
+                  📈 Прогресс по дням
+                </h2>
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <LineChart data={lineData}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
+                      <YAxis stroke="#9ca3af" fontSize={12} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgba(31, 41, 55, 0.9)',
+                          borderRadius: '8px',
+                          border: 'none',
+                          color: '#fff',
+                        }}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="Прогресс"
+                        stroke="#3b82f6"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: '#3b82f6' }}
+                        activeDot={{ r: 7 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             )}

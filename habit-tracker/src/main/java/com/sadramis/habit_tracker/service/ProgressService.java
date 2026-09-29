@@ -68,4 +68,11 @@ public class ProgressService {
                 .map(p -> new ProgressDto(p.getId(), p.getProgressValue(), p.getDate()))
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<ProgressDto> getAllUserProgress(Long userId) {
+        return progressRepository.findAllByGoal_User_IdOrderByDateAsc(userId).stream()
+                .map(p -> new ProgressDto(p.getId(), p.getProgressValue(), p.getDate()))
+                .toList();
+    }
 }

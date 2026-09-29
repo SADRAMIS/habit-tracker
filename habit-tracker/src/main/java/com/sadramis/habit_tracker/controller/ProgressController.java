@@ -43,4 +43,12 @@ public class ProgressController {
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         return ResponseEntity.ok(progressService.getProgressHistory(goalId, user.getId()));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<ProgressDto>> getAllUserProgress(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        return ResponseEntity.ok(progressService.getAllUserProgress(user.getId()));
+    }
 }

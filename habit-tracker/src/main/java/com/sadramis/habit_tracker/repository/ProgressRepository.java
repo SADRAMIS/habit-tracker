@@ -13,4 +13,5 @@ public interface ProgressRepository extends JpaRepository<Progress, Long> {
     List<Progress> findByGoal_IdOrderByDateDesc(Long goalId);
     @Query("SELECT SUM(p.progressValue) FROM Progress p WHERE p.goal.id = :goalId")
     Double sumValueByGoalId(@Param("goalId") Long goalId);
+    List<Progress> findAllByGoal_User_IdOrderByDateAsc(Long userId);
 }
