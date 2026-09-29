@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { showToast } from './Toast';
+import AchievementsPanel from './AchievementsPanel';
 
 export default function ProfilePage({ onLogout }) {
   const { t } = useTranslation();
@@ -145,6 +146,9 @@ export default function ProfilePage({ onLogout }) {
             </button>
           </form>
         </div>
+
+        {/* Достижения */}
+        <AchievementsPanel />
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-2 border-red-200 dark:border-red-900 animate-fade-in transition-colors">
           <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">{t('danger_zone')}</h2>

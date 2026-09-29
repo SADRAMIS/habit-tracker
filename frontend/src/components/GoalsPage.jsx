@@ -6,6 +6,7 @@ import { showToast } from './Toast';
 import { SkeletonGoalCard } from './Skeleton';
 import { getDaysLeft, isDeadlineSoon, formatDaysLeft } from '../utils/dateUtils';
 import { checkDeadlines } from '../utils/notifications';
+import { checkAchievements } from '../utils/achievements';
 
 export default function GoalsPage({ onLogout }) {
   const { t } = useTranslation();
@@ -22,12 +23,22 @@ export default function GoalsPage({ onLogout }) {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadGoals = async () => {
+    const loadGoals = async () => {
       try {
         setRefreshing(true);
         const data = await api.getGoals();
         setGoals(data);
-        // Проверяем дедлайны и отправляем уведомления
+
+        // Проверяем достижения
+        const newAchievements = checkAchievements(data);
+        newAchievements.forEach((ach) => {
+          showToast(
+            t('achievement_unlocked', { name: t(ach.nameKey) }) + ' ' + ach.icon,
+            'success'
+          );
+        });
+
+        // Проверяем дедлайны
         checkDeadlines(data, t);
       } finally {
         setInitialLoading(false);
