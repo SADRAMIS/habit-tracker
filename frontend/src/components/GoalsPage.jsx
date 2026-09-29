@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { showToast } from './Toast';
 import { SkeletonGoalCard } from './Skeleton';
 import { getDaysLeft, isDeadlineSoon, formatDaysLeft } from '../utils/dateUtils';
+import { checkDeadlines } from '../utils/notifications';
 
 export default function GoalsPage({ onLogout }) {
   const { t } = useTranslation();
@@ -22,15 +23,17 @@ export default function GoalsPage({ onLogout }) {
   const [refreshing, setRefreshing] = useState(false);
 
   const loadGoals = async () => {
-    try {
-      setRefreshing(true);
-      const data = await api.getGoals();
-      setGoals(data);
-    } finally {
-      setInitialLoading(false);
-      setRefreshing(false);
-    }
-  };
+      try {
+        setRefreshing(true);
+        const data = await api.getGoals();
+        setGoals(data);
+        // Проверяем дедлайны и отправляем уведомления
+        checkDeadlines(data, t);
+      } finally {
+        setInitialLoading(false);
+        setRefreshing(false);
+      }
+    };
 
   useEffect(() => {
     loadGoals();

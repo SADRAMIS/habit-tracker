@@ -10,6 +10,7 @@ import ThemeToggle from './components/ThemeToggle';
 import LanguageToggle from './components/LanguageToggle';
 import ProfilePage from './components/ProfilePage';
 import CalendarPage from './components/CalendarPage';
+import NotificationToggle from './components/NotificationToggle';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -28,6 +29,7 @@ function App() {
     <BrowserRouter>
       <ThemeToggle />
       <LanguageToggle />
+      <NotificationToggle />
       <ToastContainer />
       <Routes>
         <Route path="/" element={token ? <Navigate to="/goals" /> : <LoginPage onLogin={handleLogin} />} />
