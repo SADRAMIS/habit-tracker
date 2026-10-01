@@ -23,28 +23,28 @@ export default function GoalsPage({ onLogout }) {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [refreshing, setRefreshing] = useState(false);
 
-    const loadGoals = async () => {
-      try {
-        setRefreshing(true);
-        const data = await api.getGoals();
-        setGoals(data);
+  const loadGoals = async () => {
+    try {
+      setRefreshing(true);
+      const data = await api.getGoals();
+      setGoals(data);
 
-        // Проверяем достижения
-        const newAchievements = checkAchievements(data);
-        newAchievements.forEach((ach) => {
-          showToast(
-            t('achievement_unlocked', { name: t(ach.nameKey) }) + ' ' + ach.icon,
-            'success'
-          );
-        });
+      // Проверяем достижения
+      const newAchievements = checkAchievements(data);
+      newAchievements.forEach((ach) => {
+        showToast(
+          t('achievement_unlocked', { name: t(ach.nameKey) }) + ' ' + ach.icon,
+          'success'
+        );
+      });
 
-        // Проверяем дедлайны
-        checkDeadlines(data, t);
-      } finally {
-        setInitialLoading(false);
-        setRefreshing(false);
-      }
-    };
+      // Проверяем дедлайны
+      checkDeadlines(data, t);
+    } finally {
+      setInitialLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     loadGoals();
@@ -269,6 +269,7 @@ export default function GoalsPage({ onLogout }) {
       <div className="mt-10 flex gap-3 flex-wrap">
         <button onClick={() => navigate('/dashboard')} className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">{t('statistics')}</button>
         <button onClick={() => navigate('/calendar')} className="flex-1 min-w-[120px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition">{t('calendar')}</button>
+        <button onClick={() => navigate('/memorize')} className="flex-1 min-w-[120px] bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 rounded-lg transition">🧠 {t('memorize')}</button>
         <button onClick={() => navigate('/export')} className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition">{t('export')}</button>
         <button onClick={() => navigate('/profile')} className="flex-1 min-w-[120px] bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition">{t('profile')}</button>
         <button onClick={handleLogout} className="flex-1 min-w-[120px] bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition">{t('logout')}</button>

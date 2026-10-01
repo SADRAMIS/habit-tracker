@@ -11,6 +11,7 @@ import LanguageToggle from './components/LanguageToggle';
 import ProfilePage from './components/ProfilePage';
 import CalendarPage from './components/CalendarPage';
 import NotificationToggle from './components/NotificationToggle';
+import MemorizePage from './components/MemorizePage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -39,6 +40,7 @@ function App() {
         <Route path="/export" element={token ? <ExportPage /> : <Navigate to="/" />} />
         <Route path="/profile" element={token ? <ProfilePage onLogout={handleLogout} /> : <Navigate to="/" />} />
         <Route path="/calendar" element={token ? <CalendarPage /> : <Navigate to="/" />} />
+        <Route path="/memorize" element={token ? <MemorizePage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
