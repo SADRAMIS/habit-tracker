@@ -20,4 +20,6 @@ public class MemoryCardDto {
     private Integer intervalDays;
     private Instant lastReviewedAt;
     private Instant createdAt;
+    private Long goalId;
+    private String goalTitle;
 }

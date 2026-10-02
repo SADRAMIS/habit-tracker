@@ -12,4 +12,6 @@ public class MemoryCardRequest {
     private String content;
 
     private String tags;
+
+    private Long goalId;
 }

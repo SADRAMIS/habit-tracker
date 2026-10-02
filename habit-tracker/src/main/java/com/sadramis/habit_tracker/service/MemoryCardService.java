@@ -4,8 +4,10 @@ import com.sadramis.habit_tracker.dto.BulkImportRequest;
 import com.sadramis.habit_tracker.dto.MemoryCardDto;
 import com.sadramis.habit_tracker.dto.MemoryCardRequest;
 import com.sadramis.habit_tracker.exception.GoalNotFoundException;
+import com.sadramis.habit_tracker.model.Goal;
 import com.sadramis.habit_tracker.model.MemoryCard;
 import com.sadramis.habit_tracker.model.User;
+import com.sadramis.habit_tracker.repository.GoalRepository;
 import com.sadramis.habit_tracker.repository.MemoryCardRepository;
 import com.sadramis.habit_tracker.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,12 @@ public class MemoryCardService {
 
     private final MemoryCardRepository cardRepository;
     private final UserRepository userRepository;
+    private final GoalRepository goalRepository;
 
-    public MemoryCardService(MemoryCardRepository cardRepository, UserRepository userRepository) {
+    public MemoryCardService(MemoryCardRepository cardRepository, UserRepository userRepository, GoalRepository goalRepository) {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
+        this.goalRepository = goalRepository;
     }
 
     @Transactional
@@ -39,6 +43,13 @@ public class MemoryCardService {
         card.setContent(req.getContent());
         card.setTags(req.getTags());
         card.setNextReview(Instant.now());
+
+        if (req.getGoalId() != null) {
+            Goal goal = goalRepository.findByIdAndUser_Id(req.getGoalId(), userId)
+                    .orElseThrow(() -> new GoalNotFoundException("Цель не найдена"));
+            card.setGoal(goal);
+        }
+
         MemoryCard saved = cardRepository.save(card);
         return toDto(saved);
     }
@@ -103,7 +114,9 @@ public class MemoryCardService {
         return new MemoryCardDto(
                 c.getId(), c.getTopic(), c.getContent(), c.getTags(),
                 c.getNextReview(), c.getRepetitions(), c.getEaseFactor(),
-                c.getIntervalDays(), c.getLastReviewedAt(), c.getCreatedAt()
+                c.getIntervalDays(), c.getLastReviewedAt(), c.getCreatedAt(),
+                c.getGoal() != null ? c.getGoal().getId() : null,
+                c.getGoal() != null ? c.getGoal().getTitle() : null
         );
     }
 
@@ -179,5 +192,11 @@ public class MemoryCardService {
         card.setTags(tags);
         card.setNextReview(Instant.now());
         return card;
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemoryCardDto> getByGoal(Long userId, Long goalId) {
+        return cardRepository.findAllByUser_IdAndGoal_IdOrderByCreatedAtDesc(userId, goalId)
+                .stream().map(this::toDto).toList();
     }
 }

@@ -65,4 +65,9 @@ public class MemoryCardController {
     public ResponseEntity<List<MemoryCardDto>> bulkImport(@Valid @RequestBody BulkImportRequest req, Authentication auth) {
         return ResponseEntity.ok(cardService.bulkImport(currentUserId(auth), req));
     }
+
+    @GetMapping("/by-goal/{goalId}")
+    public ResponseEntity<List<MemoryCardDto>> getByGoal(@PathVariable Long goalId, Authentication auth) {
+        return ResponseEntity.ok(cardService.getByGoal(currentUserId(auth), goalId));
+    }
 }

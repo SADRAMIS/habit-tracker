@@ -13,4 +13,5 @@ public interface MemoryCardRepository extends JpaRepository<MemoryCard, Long> {
     List<MemoryCard> findAllByUser_IdOrderByCreatedAtDesc(Long userId);
     List<MemoryCard> findAllByUser_IdAndNextReviewLessThanEqualOrderByNextReviewAsc(Long userId, Instant now);
     Optional<MemoryCard> findByIdAndUser_Id(Long id, Long userId);
+    List<MemoryCard> findAllByUser_IdAndGoal_IdOrderByCreatedAtDesc(Long userId, Long goalId);
 }
