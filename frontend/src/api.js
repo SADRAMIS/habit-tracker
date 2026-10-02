@@ -65,4 +65,5 @@ export const api = {
   createCard: (data) => request('/cards', { method: 'POST', body: JSON.stringify(data) }),
   reviewCard: (id, quality) => request(`/cards/${id}/review`, { method: 'POST', body: JSON.stringify({ quality }) }),
   deleteCard: (id) => request(`/cards/${id}`, { method: 'DELETE' }),
+  importCards: (data) => request('/cards/import', { method: 'POST', body: JSON.stringify(data) }),
 };

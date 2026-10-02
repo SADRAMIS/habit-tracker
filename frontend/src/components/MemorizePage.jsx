@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { showToast } from './Toast';
 import MindMap from './MindMap';
+import ImportCardsModal from './ImportCardsModal';
 
 export default function MemorizePage() {
   const { t } = useTranslation();
@@ -23,6 +24,9 @@ export default function MemorizePage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [showMindMap, setShowMindMap] = useState(false);
+
+  // Импорт из текста
+  const [showImport, setShowImport] = useState(false);
 
   const load = async () => {
     try {
@@ -193,9 +197,9 @@ export default function MemorizePage() {
           </button>
         </div>
 
-        {/* Кнопка «Начать повторение» */}
+        {/* Блок «К повторению» + кнопки */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6 animate-fade-in transition-colors">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-3">
             <div>
               <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
                 {t('cards_due')}
@@ -204,13 +208,21 @@ export default function MemorizePage() {
                 {dueCards.length} {t('memory_cards').toLowerCase()}
               </p>
             </div>
-            <button
-              onClick={startStudy}
-              disabled={dueCards.length === 0}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition"
-            >
-              ▶ {t('start_study')}
-            </button>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setShowImport(true)}
+                className="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg transition"
+              >
+                {t('import_from_text')}
+              </button>
+              <button
+                onClick={startStudy}
+                disabled={dueCards.length === 0}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition"
+              >
+                ▶ {t('start_study')}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -282,6 +294,13 @@ export default function MemorizePage() {
           </div>
         )}
       </div>
+
+      {showImport && (
+        <ImportCardsModal
+          onClose={() => setShowImport(false)}
+          onImported={load}
+        />
+      )}
     </div>
   );
 }
