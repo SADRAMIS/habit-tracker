@@ -1,5 +1,6 @@
 package com.sadramis.habit_tracker.controller;
 
+import com.sadramis.habit_tracker.dto.BulkImportRequest;
 import com.sadramis.habit_tracker.dto.MemoryCardDto;
 import com.sadramis.habit_tracker.dto.MemoryCardRequest;
 import com.sadramis.habit_tracker.dto.ReviewRequest;
@@ -58,5 +59,10 @@ public class MemoryCardController {
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
         cardService.delete(currentUserId(auth), id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<List<MemoryCardDto>> bulkImport(@Valid @RequestBody BulkImportRequest req, Authentication auth) {
+        return ResponseEntity.ok(cardService.bulkImport(currentUserId(auth), req));
     }
 }

@@ -1,5 +1,6 @@
 package com.sadramis.habit_tracker.service;
 
+import com.sadramis.habit_tracker.dto.BulkImportRequest;
 import com.sadramis.habit_tracker.dto.MemoryCardDto;
 import com.sadramis.habit_tracker.dto.MemoryCardRequest;
 import com.sadramis.habit_tracker.exception.GoalNotFoundException;
@@ -12,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -102,5 +105,79 @@ public class MemoryCardService {
                 c.getNextReview(), c.getRepetitions(), c.getEaseFactor(),
                 c.getIntervalDays(), c.getLastReviewedAt(), c.getCreatedAt()
         );
+    }
+
+    @Transactional
+    public List<MemoryCardDto> bulkImport(Long userId, BulkImportRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GoalNotFoundException("Пользователь не найден"));
+
+        List<MemoryCard> cards = new ArrayList<>();
+        String splitBy = req.getSplitBy() == null ? "paragraphs" : req.getSplitBy();
+
+        switch (splitBy) {
+            case "colon":
+                // Каждая строка "Тема: Содержание"
+                for (String line : req.getText().split("\\r?\\n")) {
+                    String trimmed = line.trim();
+                    if (trimmed.isEmpty()) continue;
+                    int idx = trimmed.indexOf(':');
+                    if (idx <= 0 || idx >= trimmed.length() - 1) continue;
+                    String topic = trimmed.substring(0, idx).trim();
+                    String content = trimmed.substring(idx + 1).trim();
+                    if (topic.isEmpty() || content.isEmpty()) continue;
+                    cards.add(buildCard(user, topic, content, req.getTags()));
+                    if (cards.size() >= 50) break;
+                }
+                break;
+
+            case "lines":
+                for (String line : req.getText().split("\\r?\\n")) {
+                    String trimmed = line.trim();
+                    if (trimmed.length() < 5) continue;
+                    String[] parts = splitToTopicContent(trimmed);
+                    cards.add(buildCard(user, parts[0], parts[1], req.getTags()));
+                    if (cards.size() >= 50) break;
+                }
+                break;
+
+            case "paragraphs":
+            default:
+                for (String para : req.getText().split("\\n\\s*\\n")) {
+                    String trimmed = para.trim().replaceAll("\\s+", " ");
+                    if (trimmed.length() < 10) continue;
+                    String[] parts = splitToTopicContent(trimmed);
+                    cards.add(buildCard(user, parts[0], parts[1], req.getTags()));
+                    if (cards.size() >= 50) break;
+                }
+                break;
+        }
+
+        List<MemoryCard> saved = cardRepository.saveAll(cards);
+        return saved.stream().map(this::toDto).toList();
+    }
+
+    /**
+     * Разбивает текст на "тему" (первые ~6 слов) и "содержание" (весь текст).
+     */
+    private String[] splitToTopicContent(String text) {
+        String[] words = text.split("\\s+");
+        String topic;
+        if (words.length <= 6) {
+            topic = text;
+        } else {
+            topic = String.join(" ", Arrays.copyOfRange(words, 0, 6)) + "…";
+        }
+        return new String[]{topic, text};
+    }
+
+    private MemoryCard buildCard(User user, String topic, String content, String tags) {
+        MemoryCard card = new MemoryCard();
+        card.setUser(user);
+        card.setTopic(topic.length() > 500 ? topic.substring(0, 500) : topic);
+        card.setContent(content.length() > 4000 ? content.substring(0, 4000) : content);
+        card.setTags(tags);
+        card.setNextReview(Instant.now());
+        return card;
     }
 }
