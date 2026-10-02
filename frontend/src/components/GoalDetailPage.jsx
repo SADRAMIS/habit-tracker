@@ -11,6 +11,7 @@ export default function GoalDetailPage() {
   const navigate = useNavigate();
   const [goal, setGoal] = useState(null);
   const [history, setHistory] = useState([]);
+  const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -25,8 +26,10 @@ export default function GoalDetailPage() {
       try {
         const goalData = await api.getGoalById(id);
         const historyData = await api.getProgressHistory(id);
+        const cardsData = await api.getCardsByGoal(id);
         setGoal(goalData);
         setHistory(historyData);
+        setCards(cardsData);
       } catch (error) {
         console.error('Ошибка загрузки:', error);
         showToast('Error', 'error');
@@ -214,6 +217,51 @@ export default function GoalDetailPage() {
                 </button>
               </div>
             </form>
+          )}
+        </div>
+
+        {/* Карточки для запоминания */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6 animate-fade-in transition-colors">
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+              🧠 {t('cards_for_goal')}
+              {cards.length > 0 && (
+                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                  ({t('cards_count', { count: cards.length })})
+                </span>
+              )}
+            </h2>
+            <button
+              onClick={() => navigate(`/memorize?goal=${id}`)}
+              className="bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm"
+            >
+              {t('open_in_memorize')}
+            </button>
+          </div>
+
+          {cards.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+              {t('cards_for_goal_empty')}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {cards.map((card) => (
+                <div
+                  key={card.id}
+                  className="flex justify-between items-start border-b border-gray-100 dark:border-gray-700 py-2 last:border-0"
+                >
+                  <div>
+                    <p className="font-semibold text-gray-800 dark:text-white">{card.topic}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
+                      {card.content}
+                    </p>
+                  </div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-4 whitespace-nowrap">
+                    🔁 {card.repetitions} · ⏭ {new Date(card.nextReview).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

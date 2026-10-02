@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import { showToast } from './Toast';
 import MindMap from './MindMap';
@@ -9,14 +9,21 @@ import ImportCardsModal from './ImportCardsModal';
 export default function MemorizePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [cards, setCards] = useState([]);
   const [dueCards, setDueCards] = useState([]);
+  const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Фильтр по цели из URL
+  const goalFilter = searchParams.get('goal') ? Number(searchParams.get('goal')) : null;
 
   // Форма создания
   const [topic, setTopic] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
+  const [goalId, setGoalId] = useState(goalFilter ? String(goalFilter) : '');
 
   // Режим учёбы
   const [studyMode, setStudyMode] = useState(false);
@@ -30,9 +37,14 @@ export default function MemorizePage() {
 
   const load = async () => {
     try {
-      const [all, due] = await Promise.all([api.getAllCards(), api.getDueCards()]);
+      const [all, due, allGoals] = await Promise.all([
+        api.getAllCards(),
+        api.getDueCards(),
+        api.getGoals(),
+      ]);
       setCards(all);
       setDueCards(due);
+      setGoals(allGoals);
     } finally {
       setLoading(false);
     }
@@ -42,10 +54,28 @@ export default function MemorizePage() {
     load();
   }, []);
 
+  // Обновляем goalId при изменении URL-фильтра
+  useEffect(() => {
+    setGoalId(goalFilter ? String(goalFilter) : '');
+  }, [goalFilter]);
+
+  const filteredCards = goalFilter
+    ? cards.filter((c) => c.goalId === goalFilter)
+    : cards;
+
+  const filteredDue = goalFilter
+    ? dueCards.filter((c) => c.goalId === goalFilter)
+    : dueCards;
+
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await api.createCard({ topic, content, tags });
+      await api.createCard({
+        topic,
+        content,
+        tags,
+        goalId: goalId ? Number(goalId) : null,
+      });
       setTopic('');
       setContent('');
       setTags('');
@@ -57,11 +87,11 @@ export default function MemorizePage() {
   };
 
   const startStudy = () => {
-    if (dueCards.length === 0) {
+    if (filteredDue.length === 0) {
       showToast(t('no_cards_due'), 'warning');
       return;
     }
-    setStudyQueue([...dueCards]);
+    setStudyQueue([...filteredDue]);
     setCurrentIndex(0);
     setShowAnswer(false);
     setShowMindMap(false);
@@ -96,6 +126,10 @@ export default function MemorizePage() {
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     }
+  };
+
+  const clearGoalFilter = () => {
+    setSearchParams({});
   };
 
   // === РЕЖИМ УЧЁБЫ ===
@@ -197,6 +231,21 @@ export default function MemorizePage() {
           </button>
         </div>
 
+        {/* Плашка фильтра по цели */}
+        {goalFilter && (
+          <div className="bg-pink-50 dark:bg-pink-900/30 border border-pink-300 dark:border-pink-800 rounded-xl p-4 mb-6 flex justify-between items-center">
+            <span className="text-pink-800 dark:text-pink-200 font-semibold">
+              🎯 {t('cards_for_goal')}: {goals.find((g) => g.id === goalFilter)?.title || '...'}
+            </span>
+            <button
+              onClick={clearGoalFilter}
+              className="text-pink-600 dark:text-pink-400 hover:underline font-semibold text-sm"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Блок «К повторению» + кнопки */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6 animate-fade-in transition-colors">
           <div className="flex justify-between items-center flex-wrap gap-3">
@@ -205,7 +254,7 @@ export default function MemorizePage() {
                 {t('cards_due')}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {dueCards.length} {t('memory_cards').toLowerCase()}
+                {filteredDue.length} {t('memory_cards').toLowerCase()}
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -217,7 +266,7 @@ export default function MemorizePage() {
               </button>
               <button
                 onClick={startStudy}
-                disabled={dueCards.length === 0}
+                disabled={filteredDue.length === 0}
                 className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition"
               >
                 ▶ {t('start_study')}
@@ -251,6 +300,25 @@ export default function MemorizePage() {
               onChange={(e) => setTags(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+
+            {/* Селект привязки к цели */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                🎯 {t('link_to_goal')}
+              </label>
+              <select
+                value={goalId}
+                onChange={(e) => setGoalId(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">— {t('no_goal_link')} —</option>
+                {goals.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.title}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <button type="submit" className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
             {t('create')}
@@ -261,11 +329,11 @@ export default function MemorizePage() {
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{t('cards_all')}</h2>
         {loading ? (
           <p className="text-center text-gray-500 dark:text-gray-400">Loading...</p>
-        ) : cards.length === 0 ? (
+        ) : filteredCards.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400">{t('no_cards')}</p>
         ) : (
           <div className="space-y-3">
-            {cards.map((card) => (
+            {filteredCards.map((card) => (
               <div
                 key={card.id}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 animate-fade-in-up transition-colors"
@@ -276,10 +344,15 @@ export default function MemorizePage() {
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                       {card.content}
                     </p>
-                    <div className="flex gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
                       <span>🔁 {t('repetitions')}: {card.repetitions}</span>
                       <span>📅 {t('interval_days')}: {card.intervalDays}</span>
                       <span>⏭ {new Date(card.nextReview).toLocaleDateString()}</span>
+                      {card.goalTitle && (
+                        <span className="text-pink-600 dark:text-pink-400">
+                          🎯 {card.goalTitle}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <button
