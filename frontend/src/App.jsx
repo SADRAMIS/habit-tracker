@@ -12,6 +12,7 @@ import ProfilePage from './components/ProfilePage';
 import CalendarPage from './components/CalendarPage';
 import NotificationToggle from './components/NotificationToggle';
 import MemorizePage from './components/MemorizePage';
+import StudyPage from './components/StudyPage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -41,6 +42,7 @@ function App() {
         <Route path="/profile" element={token ? <ProfilePage onLogout={handleLogout} /> : <Navigate to="/" />} />
         <Route path="/calendar" element={token ? <CalendarPage /> : <Navigate to="/" />} />
         <Route path="/memorize" element={token ? <MemorizePage /> : <Navigate to="/" />} />
+        <Route path="/study" element={token ? <StudyPage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

@@ -67,4 +67,6 @@ export const api = {
   deleteCard: (id) => request(`/cards/${id}`, { method: 'DELETE' }),
   importCards: (data) => request('/cards/import', { method: 'POST', body: JSON.stringify(data) }),
   getCardsByGoal: (goalId) => request(`/cards/by-goal/${goalId}`),
+  getAllStudyTopics: () => request('/study'),
+  getStudyTopic: (id) => request(`/study/${id}`),
 };
