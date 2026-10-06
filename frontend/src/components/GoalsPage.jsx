@@ -270,6 +270,7 @@ export default function GoalsPage({ onLogout }) {
         <button onClick={() => navigate('/dashboard')} className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">{t('statistics')}</button>
         <button onClick={() => navigate('/calendar')} className="flex-1 min-w-[120px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition">{t('calendar')}</button>
         <button onClick={() => navigate('/memorize')} className="flex-1 min-w-[120px] bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 rounded-lg transition">🧠 {t('memorize')}</button>
+        <button onClick={() => navigate('/feynman')} className="flex-1 min-w-[120px] bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 rounded-lg transition">✍️ {t('feynman_title')}</button>
         <button onClick={() => navigate('/study')} className="flex-1 min-w-[120px] bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition">📚 {t('study')}</button>
         <button onClick={() => navigate('/export')} className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition">{t('export')}</button>
         <button onClick={() => navigate('/profile')} className="flex-1 min-w-[120px] bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition">{t('profile')}</button>

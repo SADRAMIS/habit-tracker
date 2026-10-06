@@ -69,4 +69,8 @@ export const api = {
   getCardsByGoal: (goalId) => request(`/cards/by-goal/${goalId}`),
   getAllStudyTopics: () => request('/study'),
   getStudyTopic: (id) => request(`/study/${id}`),
+  getAllFeynman: () => request('/feynman'),
+  getFeynmanStreak: () => request('/feynman/streak'),
+  getFeynmanByTopic: (topicId) => request(`/feynman/by-topic/${topicId}`),
+  createFeynman: (data) => request('/feynman', { method: 'POST', body: JSON.stringify(data) }),
 };
