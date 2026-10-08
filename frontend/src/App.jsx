@@ -14,6 +14,7 @@ import NotificationToggle from './components/NotificationToggle';
 import MemorizePage from './components/MemorizePage';
 import StudyPage from './components/StudyPage';
 import FeynmanPage from './components/FeynmanPage';
+import MemoryStatsPage from './components/MemoryStatsPage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -45,6 +46,7 @@ function App() {
         <Route path="/memorize" element={token ? <MemorizePage /> : <Navigate to="/" />} />
         <Route path="/study" element={token ? <StudyPage /> : <Navigate to="/" />} />
         <Route path="/feynman" element={token ? <FeynmanPage /> : <Navigate to="/" />} />
+        <Route path="/memory-stats" element={token ? <MemoryStatsPage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

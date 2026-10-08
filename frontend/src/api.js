@@ -73,4 +73,5 @@ export const api = {
   getFeynmanStreak: () => request('/feynman/streak'),
   getFeynmanByTopic: (topicId) => request(`/feynman/by-topic/${topicId}`),
   createFeynman: (data) => request('/feynman', { method: 'POST', body: JSON.stringify(data) }),
+  getMemoryStats: () => request('/cards/stats'),
 };

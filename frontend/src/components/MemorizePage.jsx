@@ -219,16 +219,24 @@ export default function MemorizePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 transition-colors">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
             🧠 {t('memory_cards')}
           </h1>
-          <button
-            onClick={() => navigate('/goals')}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-          >
-            {t('back_to_goals')}
-          </button>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => navigate('/memory-stats')}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+            >
+              {t('memory_open_stats')}
+            </button>
+            <button
+              onClick={() => navigate('/goals')}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+            >
+              {t('back_to_goals')}
+            </button>
+          </div>
         </div>
 
         {/* Плашка фильтра по цели */}
