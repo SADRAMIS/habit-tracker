@@ -3,6 +3,7 @@ package com.sadramis.habit_tracker.service;
 import com.sadramis.habit_tracker.dto.BulkImportRequest;
 import com.sadramis.habit_tracker.dto.MemoryCardDto;
 import com.sadramis.habit_tracker.dto.MemoryCardRequest;
+import com.sadramis.habit_tracker.dto.MemoryStatsDto;
 import com.sadramis.habit_tracker.exception.GoalNotFoundException;
 import com.sadramis.habit_tracker.model.Goal;
 import com.sadramis.habit_tracker.model.MemoryCard;
@@ -18,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Comparator;
 
 @Service
 public class MemoryCardService {
@@ -198,5 +200,75 @@ public class MemoryCardService {
     public List<MemoryCardDto> getByGoal(Long userId, Long goalId) {
         return cardRepository.findAllByUser_IdAndGoal_IdOrderByCreatedAtDesc(userId, goalId)
                 .stream().map(this::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public MemoryStatsDto getStats(Long userId) {
+        List<MemoryCard> cards = cardRepository.findAllByUser_IdOrderByCreatedAtDesc(userId);
+
+        if (cards.isEmpty()) {
+            return new MemoryStatsDto(
+                    0, 0, 0, 0, 0, 0.0, 0.0, 0,
+                    List.of(), List.of()
+            );
+        }
+
+        int total = cards.size();
+        int dueToday = 0;
+        int mature = 0;
+        int young = 0;
+        int newCards = 0;
+        double totalEase = 0;
+        double totalInterval = 0;
+        int totalReviews = 0;
+
+        Instant now = Instant.now();
+
+        // Интервалы для кривой забывания
+        int[] buckets = new int[5]; // 0-1, 2-6, 7-20, 21-60, 61+
+        String[] labels = {"0–1 д.", "2–6 д.", "7–20 д.", "21–60 д.", "61+ д."};
+
+        for (MemoryCard c : cards) {
+            if (c.getNextReview() != null && c.getNextReview().isBefore(now)) dueToday++;
+            if (c.getRepetitions() == 0) newCards++;
+            if (c.getIntervalDays() >= 21) mature++;
+            else if (c.getIntervalDays() >= 1) young++;
+
+            totalEase += c.getEaseFactor();
+            totalInterval += c.getIntervalDays();
+            totalReviews += c.getRepetitions();
+
+            int interval = c.getIntervalDays();
+            if (interval <= 1) buckets[0]++;
+            else if (interval <= 6) buckets[1]++;
+            else if (interval <= 20) buckets[2]++;
+            else if (interval <= 60) buckets[3]++;
+            else buckets[4]++;
+        }
+
+        List<MemoryStatsDto.IntervalBucket> dist = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            dist.add(new MemoryStatsDto.IntervalBucket(labels[i], buckets[i]));
+        }
+
+        // Топ-5 самых сложных (низкий easeFactor, но уже повторялись)
+        List<MemoryStatsDto.HardCard> hardest = cards.stream()
+                .filter(c -> c.getRepetitions() >= 2)
+                .sorted(Comparator.comparingDouble(MemoryCard::getEaseFactor))
+                .limit(5)
+                .map(c -> new MemoryStatsDto.HardCard(
+                        c.getId(), c.getTopic(),
+                        c.getEaseFactor(), c.getRepetitions(), c.getIntervalDays()
+                ))
+                .toList();
+
+        return new MemoryStatsDto(
+                total, dueToday, mature, young, newCards,
+                totalEase / total,
+                totalInterval / total,
+                totalReviews,
+                dist,
+                hardest
+        );
     }
 }

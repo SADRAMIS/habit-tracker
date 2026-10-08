@@ -1,9 +1,6 @@
 package com.sadramis.habit_tracker.controller;
 
-import com.sadramis.habit_tracker.dto.BulkImportRequest;
-import com.sadramis.habit_tracker.dto.MemoryCardDto;
-import com.sadramis.habit_tracker.dto.MemoryCardRequest;
-import com.sadramis.habit_tracker.dto.ReviewRequest;
+import com.sadramis.habit_tracker.dto.*;
 import com.sadramis.habit_tracker.exception.UserNotFoundException;
 import com.sadramis.habit_tracker.model.User;
 import com.sadramis.habit_tracker.repository.UserRepository;
@@ -69,5 +66,10 @@ public class MemoryCardController {
     @GetMapping("/by-goal/{goalId}")
     public ResponseEntity<List<MemoryCardDto>> getByGoal(@PathVariable Long goalId, Authentication auth) {
         return ResponseEntity.ok(cardService.getByGoal(currentUserId(auth), goalId));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<MemoryStatsDto> getStats(Authentication auth) {
+        return ResponseEntity.ok(cardService.getStats(currentUserId(auth)));
     }
 }
