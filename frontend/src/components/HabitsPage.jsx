@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { showToast } from './Toast';
+import HabitHeatmap from './HabitHeatmap';
 
 const PRESET_ICONS = ['✅', '💧', '🏃', '📚', '🧘', '💪', '🍎', '😴', '✍️', '🎯', '🎨', '🎸', '🌱', '☀️', '🚭', '🧹'];
 const PRESET_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
@@ -21,6 +22,9 @@ export default function HabitsPage() {
   const [color, setColor] = useState('#3b82f6');
   const [targetPerDay, setTargetPerDay] = useState(1);
   const [saving, setSaving] = useState(false);
+
+  // Heatmap
+  const [expandedHabitId, setExpandedHabitId] = useState(null);
 
   const load = async () => {
     try {
@@ -246,8 +250,8 @@ export default function HabitsPage() {
                   className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 animate-fade-in-up transition-colors"
                   style={{ borderLeft: `4px solid ${habit.color}` }}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Большая кнопка-эмодзи */}
+                  <div className="flex items-start gap-4">
+                    {/* Кнопка-эмодзи */}
                     <button
                       onClick={() => handleToggle(habit.id)}
                       className={`flex-shrink-0 w-14 h-14 rounded-2xl text-3xl flex items-center justify-center transition-all duration-200 ${
@@ -280,7 +284,6 @@ export default function HabitsPage() {
                         </p>
                       )}
 
-                      {/* Прогресс-бар для count-привычек */}
                       {isCountable && (
                         <div className="mt-2">
                           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-1">
@@ -298,14 +301,19 @@ export default function HabitsPage() {
                         </div>
                       )}
 
-                      {/* Статистика */}
                       <div className="flex gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
                         <span>🏆 {t('habit_longest')}: {habit.longestStreak} {t('habit_days')}</span>
                         <span>📊 {t('habit_total')}: {habit.totalCompletions}</span>
                       </div>
+
+                      <button
+                        onClick={() => setExpandedHabitId(expandedHabitId === habit.id ? null : habit.id)}
+                        className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        📅 {expandedHabitId === habit.id ? 'Скрыть график' : 'Показать график'}
+                      </button>
                     </div>
 
-                    {/* Кнопки действий */}
                     <div className="flex flex-col gap-1 items-end">
                       {isCountable && (
                         <button
@@ -325,6 +333,13 @@ export default function HabitsPage() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Heatmap */}
+                  {expandedHabitId === habit.id && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                      <HabitHeatmap dates={habit.recentDates || []} color={habit.color} weeks={20} />
+                    </div>
+                  )}
                 </div>
               );
             })}
