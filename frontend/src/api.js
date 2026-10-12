@@ -74,4 +74,9 @@ export const api = {
   getFeynmanByTopic: (topicId) => request(`/feynman/by-topic/${topicId}`),
   createFeynman: (data) => request('/feynman', { method: 'POST', body: JSON.stringify(data) }),
   getMemoryStats: () => request('/cards/stats'),
+  getAllHabits: () => request('/habits'),
+  createHabit: (data) => request('/habits', { method: 'POST', body: JSON.stringify(data) }),
+  toggleHabit: (id) => request(`/habits/${id}/toggle`, { method: 'POST' }),
+  incrementHabit: (id) => request(`/habits/${id}/increment`, { method: 'POST' }),
+  deleteHabit: (id) => request(`/habits/${id}`, { method: 'DELETE' }),
 };
