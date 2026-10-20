@@ -16,6 +16,8 @@ import StudyPage from './components/StudyPage';
 import FeynmanPage from './components/FeynmanPage';
 import MemoryStatsPage from './components/MemoryStatsPage';
 import HabitsPage from './components/HabitsPage';
+import InstallPrompt from './components/InstallPrompt';
+
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -36,6 +38,7 @@ function App() {
       <LanguageToggle />
       <NotificationToggle />
       <ToastContainer />
+      <InstallPrompt />
       <Routes>
         <Route path="/" element={token ? <Navigate to="/goals" /> : <LoginPage onLogin={handleLogin} />} />
         <Route path="/goals" element={token ? <GoalsPage onLogout={handleLogout} /> : <Navigate to="/" />} />
