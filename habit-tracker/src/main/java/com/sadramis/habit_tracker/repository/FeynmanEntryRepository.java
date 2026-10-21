@@ -10,4 +10,6 @@ import java.util.List;
 public interface FeynmanEntryRepository extends JpaRepository<FeynmanEntry, Long> {
     List<FeynmanEntry> findAllByUser_IdOrderByCreatedAtDesc(Long userId);
     List<FeynmanEntry> findAllByUser_IdAndTopicIdOrderByCreatedAtDesc(Long userId, Long topicId);
+    List<FeynmanEntry> findByUser_IdAndExplanationContainingIgnoreCase(Long userId, String explanation);
+    List<FeynmanEntry> findByUser_IdAndTopicTitleContainingIgnoreCase(Long userId, String topicTitle);
 }

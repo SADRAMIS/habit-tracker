@@ -12,4 +12,6 @@ public interface StudyTopicRepository extends JpaRepository<StudyTopic, Long> {
     List<StudyTopic> findAllByOrderByModuleAscOrderIndexAsc();
     List<StudyTopic> findAllByModuleOrderByOrderIndexAsc(String module);
     Optional<StudyTopic> findByTitle(String title);
+    List<StudyTopic> findByTitleContainingIgnoreCase(String title);
+    List<StudyTopic> findBySummaryContainingIgnoreCase(String summary);
 }

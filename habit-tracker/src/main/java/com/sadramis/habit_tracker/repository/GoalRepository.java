@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface GoalRepository extends JpaRepository<Goal, Long> {
     List<Goal> findByUser_Id(Long userId);
     Optional<Goal> findByIdAndUser_Id(Long id, Long userId);
+    List<Goal> findByUser_IdAndTitleContainingIgnoreCase(Long userId, String title);
 }

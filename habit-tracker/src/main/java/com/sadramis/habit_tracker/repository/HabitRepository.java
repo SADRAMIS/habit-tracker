@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface HabitRepository extends JpaRepository<Habit, Long> {
     List<Habit> findAllByUser_IdOrderByCreatedAtAsc(Long userId);
     Optional<Habit> findByIdAndUser_Id(Long id, Long userId);
+    List<Habit> findByUser_IdAndTitleContainingIgnoreCase(Long userId, String title);
 }
