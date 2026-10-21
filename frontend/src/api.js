@@ -79,4 +79,5 @@ export const api = {
   toggleHabit: (id) => request(`/habits/${id}/toggle`, { method: 'POST' }),
   incrementHabit: (id) => request(`/habits/${id}/increment`, { method: 'POST' }),
   deleteHabit: (id) => request(`/habits/${id}`, { method: 'DELETE' }),
+  search: (query) => request(`/search?q=${encodeURIComponent(query)}`),
 };

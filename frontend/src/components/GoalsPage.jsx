@@ -133,7 +133,7 @@ export default function GoalsPage({ onLogout }) {
 
   return (
     <div className="max-w-4xl mx-auto p-4 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
-      <div className="flex justify-center items-center gap-3 mb-6">
+      <div className="flex justify-center items-center gap-3 mb-6 flex-wrap">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
           {t('my_goals')}
         </h1>
@@ -142,6 +142,13 @@ export default function GoalsPage({ onLogout }) {
             ↻
           </span>
         )}
+        <button
+          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+          className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+          title="Ctrl+K"
+        >
+          🔍 Поиск
+        </button>
       </div>
 
       <form onSubmit={handleCreateGoal} className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6 animate-fade-in transition-colors">
