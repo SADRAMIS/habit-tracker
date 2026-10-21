@@ -5,15 +5,23 @@ export default function SearchTrigger() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const handler = (e) => {
-      // Ctrl+K или Cmd+K
+    const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
+        e.stopPropagation();
         setOpen((prev) => !prev);
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+
+    const handleOpenCustom = () => setOpen(true);
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    window.addEventListener('open-search-modal', handleOpenCustom);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('open-search-modal', handleOpenCustom);
+    };
   }, []);
 
   return (

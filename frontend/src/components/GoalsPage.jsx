@@ -143,7 +143,7 @@ export default function GoalsPage({ onLogout }) {
           </span>
         )}
         <button
-          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+          onClick={() => window.dispatchEvent(new Event('open-search-modal'))}
           className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
           title="Ctrl+K"
         >
