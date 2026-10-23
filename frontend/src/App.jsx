@@ -18,6 +18,7 @@ import MemoryStatsPage from './components/MemoryStatsPage';
 import HabitsPage from './components/HabitsPage';
 import InstallPrompt from './components/InstallPrompt';
 import SearchTrigger from './components/SearchTrigger';
+import PomodoroPage from './components/PomodoroPage';
 
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
         <Route path="/feynman" element={token ? <FeynmanPage /> : <Navigate to="/" />} />
         <Route path="/memory-stats" element={token ? <MemoryStatsPage /> : <Navigate to="/" />} />
         <Route path="/habits" element={token ? <HabitsPage /> : <Navigate to="/" />} />
+        <Route path="/pomodoro" element={token ? <PomodoroPage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

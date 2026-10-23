@@ -80,4 +80,6 @@ export const api = {
   incrementHabit: (id) => request(`/habits/${id}/increment`, { method: 'POST' }),
   deleteHabit: (id) => request(`/habits/${id}`, { method: 'DELETE' }),
   search: (query) => request(`/search?q=${encodeURIComponent(query)}`),
+  createFocusSession: (data) => request('/focus', { method: 'POST', body: JSON.stringify(data) }),
+  getFocusStats: () => request('/focus/stats'),
 };
