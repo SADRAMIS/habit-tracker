@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [goals, setGoals] = useState([]);
   const [progressHistory, setProgressHistory] = useState([]);
+  const [focusStats, setFocusStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,6 +53,18 @@ export default function DashboardPage() {
     loadProgress();
   }, []);
 
+  useEffect(() => {
+    const loadFocus = async () => {
+      try {
+        const data = await api.getFocusStats();
+        setFocusStats(data);
+      } catch (error) {
+        console.error('Ошибка загрузки статистики фокуса:', error);
+      }
+    };
+    loadFocus();
+  }, []);
+
   const total = goals.length;
   const completed = goals.filter(g => g.status === 'COMPLETED').length;
   const inProgress = goals.filter(g => g.status === 'IN_PROGRESS').length;
@@ -76,7 +89,6 @@ export default function DashboardPage() {
     return acc;
   }, {});
 
-  // Кумулятивная сумма (накопительно по дням)
   const sortedDates = Object.keys(progressByDate).sort();
   let cumulative = 0;
   const lineData = sortedDates.map((date) => {
@@ -86,6 +98,35 @@ export default function DashboardPage() {
       Прогресс: cumulative,
     };
   });
+
+  // Focus analytics calculations
+  const focusHoursData = focusStats?.hourlyDistribution?.map((h) => ({
+    hour: `${h.hour}:00`,
+    minutes: Math.round(h.seconds / 60),
+  })) || [];
+
+  const focusHasData = focusStats && focusStats.totalSessions > 0;
+
+  const bestHour = focusHasData
+    ? focusStats.hourlyDistribution.reduce((max, h) =>
+        h.seconds > (max?.seconds || 0) ? h : max, null)
+    : null;
+
+  const avgSessionMin = focusHasData
+    ? Math.round(focusStats.totalSeconds / focusStats.totalSessions / 60)
+    : 0;
+
+  // Стрик дней подряд с фокус-сессиями
+  const focusStreak = (() => {
+    if (!focusStats?.weeklyDistribution) return 0;
+    const reversed = [...focusStats.weeklyDistribution].reverse();
+    let streak = 0;
+    for (const day of reversed) {
+      if (day.seconds > 0) streak++;
+      else break;
+    }
+    return streak;
+  })();
 
   const pieData = [
     { name: t('completed'), value: completed, color: '#10b981' },
@@ -190,6 +231,97 @@ export default function DashboardPage() {
               )}
             </div>
 
+            {/* === СЕКЦИЯ ФОКУСА === */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors mb-6">
+              <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
+                  🍅 {t('focus_section')}
+                </h2>
+                <button
+                  onClick={() => navigate('/pomodoro')}
+                  className="text-sm bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-3 py-1 rounded-lg font-semibold hover:bg-red-200 dark:hover:bg-red-900/60 transition"
+                >
+                  ▶ {t('pomodoro')}
+                </button>
+              </div>
+
+              {!focusHasData ? (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                  {t('focus_need_more')}
+                </p>
+              ) : (
+                <>
+                  {/* Мини-карточки */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                    <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl p-4 text-center border border-orange-200 dark:border-orange-800">
+                      <div className="text-2xl mb-1">🔥</div>
+                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                        {focusStreak}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                        {t('focus_day_streak')}
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-4 text-center border border-purple-200 dark:border-purple-800">
+                      <div className="text-2xl mb-1">⏰</div>
+                      <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                        {bestHour?.hour ?? '—'}:00
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                        {t('focus_best_hour')}
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-4 text-center border border-blue-200 dark:border-blue-800 col-span-2 md:col-span-1">
+                      <div className="text-2xl mb-1">📊</div>
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {avgSessionMin} {t('focus_min')}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                        {t('focus_avg_session')}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* График по часам */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                      {t('focus_hourly')}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                      {t('focus_hourly_desc')}
+                    </p>
+                    <div style={{ width: '100%', height: 240 }}>
+                      <ResponsiveContainer>
+                        <BarChart data={focusHoursData}>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                          <XAxis dataKey="hour" stroke="#9ca3af" fontSize={10} interval={2} />
+                          <YAxis
+                            stroke="#9ca3af"
+                            fontSize={12}
+                            tickFormatter={(v) => `${v}м`}
+                          />
+                          <Tooltip
+                            formatter={(value) => [`${value} ${t('focus_min')}`, t('focus_section')]}
+                            contentStyle={{
+                              backgroundColor: 'rgba(31, 41, 55, 0.95)',
+                              borderRadius: '8px',
+                              border: 'none',
+                              color: '#fff',
+                            }}
+                          />
+                          <Bar
+                            dataKey="minutes"
+                            radius={[6, 6, 0, 0]}
+                            fill="#ef4444"
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             {goals.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors">
@@ -246,7 +378,6 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* График прогресса по дням */}
             {lineData.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 animate-fade-in transition-colors mt-6">
                 <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">
