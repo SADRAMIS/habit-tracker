@@ -19,6 +19,7 @@ import HabitsPage from './components/HabitsPage';
 import InstallPrompt from './components/InstallPrompt';
 import SearchTrigger from './components/SearchTrigger';
 import PomodoroPage from './components/PomodoroPage';
+import InterviewPage from './components/InterviewPage';
 
 
 function App() {
@@ -56,6 +57,7 @@ function App() {
         <Route path="/memory-stats" element={token ? <MemoryStatsPage /> : <Navigate to="/" />} />
         <Route path="/habits" element={token ? <HabitsPage /> : <Navigate to="/" />} />
         <Route path="/pomodoro" element={token ? <PomodoroPage /> : <Navigate to="/" />} />
+        <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

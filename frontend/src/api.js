@@ -82,4 +82,8 @@ export const api = {
   search: (query) => request(`/search?q=${encodeURIComponent(query)}`),
   createFocusSession: (data) => request('/focus', { method: 'POST', body: JSON.stringify(data) }),
   getFocusStats: () => request('/focus/stats'),
+  startInterview: (mode) => request('/interview/start', { method: 'POST', body: JSON.stringify({ mode }) }),
+  sendInterviewMessage: (id, content) => request(`/interview/${id}/message`, { method: 'POST', body: JSON.stringify({ content }) }),
+  getInterviewSessions: () => request('/interview'),
+  getInterviewSession: (id) => request(`/interview/${id}`),
 };
