@@ -143,36 +143,46 @@ public class InterviewService {
                 .map(m -> new LlmMessage(m.getRole(), m.getContent()))
                 .toList();
 
-        String systemPrompt = "Ты — полезный ассистент. Проанализируй следующую сессию собеседования. " +
-                "Найди 3-5 тем, в которых пользователь ошибался или не знал точного ответа. " +
-                "Для каждой темы сгенерируй карточку памяти с кратким вопросом (topic) и правильным ответом (content). " +
-                "Верни результат СТРОГО в формате JSON-массива объектов: " +
-                "[{\"topic\": \"Вопрос по теме\", \"content\": \"Правильный ответ\"}]. " +
-                "Никакого другого текста, только валидный JSON.";
+        // Упрощенный и более строгий промпт
+        String systemPrompt = "Ты — эксперт по Java. Проанализируй этот диалог. " +
+                "Найди 3 темы, в которых пользователь дал неверный или неполный ответ. " +
+                "Верни ответ ТОЛЬКО в виде валидного JSON-массива объектов, без лишнего текста и без markdown. " +
+                "Формат: [{\"topic\": \"Краткий вопрос\", \"content\": \"Правильный ответ\"}]. " +
+                "Если пользователь ответил на все вопросы идеально, верни просто []. ";
 
         String response = llm.chat(systemPrompt, history);
-
-        // Очищаем ответ от возможных markdown-тегов (```json ... ```)
-        String cleanJson = response.trim();
-        if (cleanJson.startsWith("```json")) cleanJson = cleanJson.substring(7);
-        if (cleanJson.startsWith("```")) cleanJson = cleanJson.substring(3);
-        if (cleanJson.endsWith("```")) cleanJson = cleanJson.substring(0, cleanJson.length() - 3);
-        cleanJson = cleanJson.trim();
 
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new GoalNotFoundException("Пользователь не найден"));
 
         List<MemoryCardDto> createdCards = new ArrayList<>();
+
+        // Если ответ пустой — сразу выходим
+        if (response == null || response.trim().isEmpty()) {
+            return createdCards;
+        }
+
+        // Вырезаем JSON массив из ответа (игнорируя возможный лишний текст)
+        int startIndex = response.indexOf('[');
+        int endIndex = response.lastIndexOf(']');
+
+        if (startIndex == -1 || endIndex == -1 || endIndex <= startIndex) {
+            return createdCards; // Не нашли JSON, возвращаем пустой список
+        }
+
+        String cleanJson = response.substring(startIndex, endIndex + 1);
+
         try {
-            // Пытаемся распарсить JSON
             List<Map<String, String>> rawCards = objectMapper.readValue(cleanJson,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
 
             for (Map<String, String> raw : rawCards) {
+                if (raw.get("topic") == null || raw.get("content") == null) continue;
+
                 MemoryCard card = new MemoryCard();
                 card.setUser(user);
-                card.setTopic(raw.getOrDefault("topic", "Вопрос из интервью"));
-                card.setContent(raw.getOrDefault("content", "Ответ не сгенерирован"));
+                card.setTopic(raw.get("topic"));
+                card.setContent(raw.get("content"));
                 card.setTags("interview,ai");
                 card.setNextReview(Instant.now());
                 MemoryCard saved = cardRepo.save(card);
@@ -185,8 +195,9 @@ public class InterviewService {
                 ));
             }
         } catch (Exception e) {
-            // Если LLM не смог выдать идеальный JSON, возвращаем пустой список или бросаем ошибку
-            throw new RuntimeException("Не удалось распарсить ответ ИИ. Попробуйте ещё раз. Ответ: " + cleanJson, e);
+            // Если JSON кривой, не роняем сервер (500), а просто выводим в лог и возвращаем то, что успели
+            System.err.println("Не удалось распарсить JSON от LLM: " + cleanJson);
+            System.err.println("Ошибка: " + e.getMessage());
         }
 
         return createdCards;

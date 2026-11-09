@@ -86,4 +86,5 @@ export const api = {
   sendInterviewMessage: (id, content) => request(`/interview/${id}/message`, { method: 'POST', body: JSON.stringify({ content }) }),
   getInterviewSessions: () => request('/interview'),
   getInterviewSession: (id) => request(`/interview/${id}`),
+  generateInterviewCards: (id) => request(`/interview/${id}/generate-cards`, { method: 'POST' }),
 };

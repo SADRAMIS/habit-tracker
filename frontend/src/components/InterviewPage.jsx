@@ -24,6 +24,9 @@ export default function InterviewPage() {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
 
+  // 🆕 Состояние для генерации карточек
+  const [generatingCards, setGeneratingCards] = useState(false);
+
   const messagesEndRef = useRef(null);
 
   // Загрузка истории сессий
@@ -99,6 +102,24 @@ export default function InterviewPage() {
       setSending(false);
     }
   };
+
+  // 🆕 Генерация карточек памяти из интервью
+    const handleGenerateCards = async () => {
+      if (!window.confirm('Сгенерировать карточки памяти из этой сессии?')) return;
+      setGeneratingCards(true);
+      try {
+        const cards = await api.generateInterviewCards(activeSession.id);
+        if (cards.length === 0) {
+          showToast('ИИ не нашел слабых мест или не смог создать карточки', 'warning');
+        } else {
+          showToast(`Создано карточек: ${cards.length}`, 'success');
+        }
+      } catch (error) {
+        showToast('Ошибка: ' + error.message, 'error');
+      } finally {
+        setGeneratingCards(false);
+      }
+    };
 
   // Экран выбора режима
   if (!activeSession) {
@@ -203,12 +224,24 @@ export default function InterviewPage() {
             <p className="text-xs text-gray-500 dark:text-gray-400">ID: {activeSession.id}</p>
           </div>
         </div>
-        <button
-          onClick={() => setActiveSession(null)}
-          className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-semibold py-2 px-4 rounded-lg transition"
-        >
-          {t('interview_new')}
-        </button>
+
+        {/* 🆕 Кнопки в шапке чата */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleGenerateCards}
+            disabled={generatingCards}
+            className="bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-lg transition"
+            title="Найти слабые места и создать карточки"
+          >
+            {generatingCards ? 'Генерация...' : '📝 Создать карточки'}
+          </button>
+          <button
+            onClick={() => setActiveSession(null)}
+            className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-semibold py-2 px-4 rounded-lg transition"
+          >
+            {t('interview_new')}
+          </button>
+        </div>
       </div>
 
       {/* Лента сообщений */}
