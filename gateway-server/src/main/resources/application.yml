@@ -4,11 +4,14 @@ server:
 spring:
   application:
     name: gateway-server
-    cloud:
-      gateway:
-        discovery:
-          locator:
-            enabled: false
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      httpclient:
+        connect-timeout: 10000
+        response-timeout: 180s
 
 management:
   endpoint:

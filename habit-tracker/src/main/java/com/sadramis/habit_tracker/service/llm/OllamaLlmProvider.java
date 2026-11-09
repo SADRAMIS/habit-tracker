@@ -19,7 +19,12 @@ public class OllamaLlmProvider implements LlmProvider {
     @Value("${app.ai.ollama.model:llama3.1:8b}")
     private String model;
 
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient = RestClient.builder()
+            .requestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory() {{
+                setConnectTimeout(10000);
+                setReadTimeout(180000);
+            }})
+            .build();
 
     @Override
     @SuppressWarnings("unchecked")
