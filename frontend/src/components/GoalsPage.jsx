@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,21 @@ export default function GoalsPage({ onLogout }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [refreshing, setRefreshing] = useState(false);
+
+  // Состояние для выпадающего меню «Инструменты»
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsRef = useRef(null);
+
+  // Закрываем меню при клике вне его области
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (toolsRef.current && !toolsRef.current.contains(event.target)) {
+        setToolsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadGoals = async () => {
     try {
@@ -273,18 +288,39 @@ export default function GoalsPage({ onLogout }) {
         </div>
       )}
 
-      <div className="mt-10 flex gap-3 flex-wrap">
-        <button onClick={() => navigate('/dashboard')} className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">{t('statistics')}</button>
-        <button onClick={() => navigate('/calendar')} className="flex-1 min-w-[120px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition">{t('calendar')}</button>
-        <button onClick={() => navigate('/memorize')} className="flex-1 min-w-[120px] bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 rounded-lg transition">🧠 {t('memorize')}</button>
-        <button onClick={() => navigate('/feynman')} className="flex-1 min-w-[120px] bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 rounded-lg transition">✍️ {t('feynman_title')}</button>
-        <button onClick={() => navigate('/habits')} className="flex-1 min-w-[120px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition">🔥 {t('habits')}</button>
-        <button onClick={() => navigate('/study')} className="flex-1 min-w-[120px] bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition">📚 {t('study')}</button>
-        <button onClick={() => navigate('/export')} className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition">{t('export')}</button>
-        <button onClick={() => navigate('/profile')} className="flex-1 min-w-[120px] bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition">{t('profile')}</button>
-        <button onClick={handleLogout} className="flex-1 min-w-[120px] bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition">{t('logout')}</button>
-        <button onClick={() => navigate('/pomodoro')} className="flex-1 min-w-[120px] bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition">🍅 {t('pomodoro')}</button>
-        <button onClick={() => navigate('/interview')} className="flex-1 min-w-[120px] bg-slate-700 hover:bg-slate-800 text-white font-bold py-2 rounded-lg transition">🤖 {t('interview_title')}</button>
+      {/* НОВАЯ ГРУППИРОВАННАЯ НАВИГАЦИЯ */}
+      <div className="mt-10 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-wrap gap-3 items-center justify-center">
+          {/* Основное */}
+          <button onClick={() => navigate('/dashboard')} className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">{t('statistics')}</button>
+          <button onClick={() => navigate('/calendar')} className="flex-1 min-w-[120px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition">{t('calendar')}</button>
+          <button onClick={() => navigate('/habits')} className="flex-1 min-w-[120px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition">🔥 {t('habits')}</button>
+
+          {/* Выпадающее меню Инструменты */}
+          <div className="relative flex-1 min-w-[140px]" ref={toolsRef}>
+            <button
+              onClick={() => setToolsOpen(!toolsOpen)}
+              className="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold py-2 rounded-lg transition flex items-center justify-center gap-2"
+            >
+              🛠 Инструменты {toolsOpen ? '▲' : '▼'}
+            </button>
+
+            {toolsOpen && (
+              <div className="absolute bottom-full mb-2 left-0 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-20">
+                <button onClick={() => navigate('/memorize')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">🧠 {t('memorize')}</button>
+                <button onClick={() => navigate('/feynman')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">✍️ {t('feynman_title')}</button>
+                <button onClick={() => navigate('/study')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">📚 {t('study')}</button>
+                <button onClick={() => navigate('/pomodoro')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">🍅 {t('pomodoro')}</button>
+                <button onClick={() => navigate('/interview')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">🤖 {t('interview_title')}</button>
+              </div>
+            )}
+          </div>
+
+          {/* Системное */}
+          <button onClick={() => navigate('/export')} className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition">{t('export')}</button>
+          <button onClick={() => navigate('/profile')} className="flex-1 min-w-[120px] bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg transition">{t('profile')}</button>
+          <button onClick={handleLogout} className="flex-1 min-w-[120px] bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition">{t('logout')}</button>
+        </div>
       </div>
     </div>
   );
