@@ -59,4 +59,9 @@ public class InterviewController {
     ) {
         return ResponseEntity.ok(service.sendMessage(currentUserId(auth), id, req.getContent()));
     }
+
+    @PostMapping("/{id}/generate-cards")
+    public ResponseEntity<List<MemoryCardDto>> generateCards(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(service.generateFlashcards(currentUserId(auth), id));
+    }
 }
