@@ -143,7 +143,6 @@ public class InterviewService {
                 .map(m -> new LlmMessage(m.getRole(), m.getContent()))
                 .toList();
 
-        // Упрощенный и более строгий промпт
         String systemPrompt = "Ты — эксперт по Java. Проанализируй этот диалог. " +
                 "Найди 3 темы, в которых пользователь дал неверный или неполный ответ. " +
                 "Верни ответ ТОЛЬКО в виде валидного JSON-массива объектов, без лишнего текста и без markdown. " +
@@ -157,49 +156,69 @@ public class InterviewService {
 
         List<MemoryCardDto> createdCards = new ArrayList<>();
 
-        // Если ответ пустой — сразу выходим
-        if (response == null || response.trim().isEmpty()) {
-            return createdCards;
-        }
+        // === ПОПЫТКА 1: ПАРСИМ ОТВЕТ ИИ ===
+        if (response != null && !response.trim().isEmpty()) {
+            int startIndex = response.indexOf('[');
+            int endIndex = response.lastIndexOf(']');
 
-        // Вырезаем JSON массив из ответа (игнорируя возможный лишний текст)
-        int startIndex = response.indexOf('[');
-        int endIndex = response.lastIndexOf(']');
+            if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+                String cleanJson = response.substring(startIndex, endIndex + 1);
+                try {
+                    List<Map<String, String>> rawCards = objectMapper.readValue(cleanJson,
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
 
-        if (startIndex == -1 || endIndex == -1 || endIndex <= startIndex) {
-            return createdCards; // Не нашли JSON, возвращаем пустой список
-        }
-
-        String cleanJson = response.substring(startIndex, endIndex + 1);
-
-        try {
-            List<Map<String, String>> rawCards = objectMapper.readValue(cleanJson,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
-
-            for (Map<String, String> raw : rawCards) {
-                if (raw.get("topic") == null || raw.get("content") == null) continue;
-
-                MemoryCard card = new MemoryCard();
-                card.setUser(user);
-                card.setTopic(raw.get("topic"));
-                card.setContent(raw.get("content"));
-                card.setTags("interview,ai");
-                card.setNextReview(Instant.now());
-                MemoryCard saved = cardRepo.save(card);
-
-                createdCards.add(new MemoryCardDto(
-                        saved.getId(), saved.getTopic(), saved.getContent(), saved.getTags(),
-                        saved.getNextReview(), saved.getRepetitions(), saved.getEaseFactor(),
-                        saved.getIntervalDays(), saved.getLastReviewedAt(), saved.getCreatedAt(),
-                        null, null
-                ));
+                    for (Map<String, String> raw : rawCards) {
+                        if (raw.get("topic") == null || raw.get("content") == null) continue;
+                        createdCards.add(saveCard(user, raw.get("topic"), raw.get("content")));
+                    }
+                } catch (Exception ignored) {
+                    // Если JSON кривой — просто идем в fallback
+                }
             }
-        } catch (Exception e) {
-            // Если JSON кривой, не роняем сервер (500), а просто выводим в лог и возвращаем то, что успели
-            System.err.println("Не удалось распарсить JSON от LLM: " + cleanJson);
-            System.err.println("Ошибка: " + e.getMessage());
+        }
+
+        // === ПОПЫТКА 2: FALLBACK (ЕСЛИ ИИ НЕ СПРАВИЛСЯ) ===
+        if (createdCards.isEmpty()) {
+            // Берем последние 2 сообщения (вопрос ассистента и ответ пользователя)
+            for (int i = messages.size() - 1; i >= 0; i--) {
+                if ("assistant".equals(messages.get(i).getRole()) && i > 0) {
+                    String question = messages.get(i).getContent();
+                    String answer = messages.get(i - 1).getContent(); // Предыдущее сообщение юзера
+
+                    // Создаем карточку: Вопрос -> Правильный ответ (или твой ответ, если ИИ не дал правильный)
+                    createdCards.add(saveCard(user, "Вопрос: " + shorten(question), "Твой ответ: " + shorten(answer) + "\n\n(Проверь правильность ответа в документации)"));
+                    break; // Создаем только одну карточку из последнего вопроса, чтобы не спамить
+                }
+            }
+        }
+
+        // Если вообще нет сообщений, создаем заглушку
+        if (createdCards.isEmpty()) {
+            createdCards.add(saveCard(user, "Интервью с ИИ", "Ты прошел сессию, но слабые места не выявлены."));
         }
 
         return createdCards;
+    }
+
+    // Вспомогательный метод для сохранения карточки
+    private MemoryCardDto saveCard(User user, String topic, String content) {
+        MemoryCard card = new MemoryCard();
+        card.setUser(user);
+        card.setTopic(topic);
+        card.setContent(content);
+        card.setTags("interview,ai");
+        card.setNextReview(Instant.now());
+        MemoryCard saved = cardRepo.save(card);
+        return new MemoryCardDto(
+                saved.getId(), saved.getTopic(), saved.getContent(), saved.getTags(),
+                saved.getNextReview(), saved.getRepetitions(), saved.getEaseFactor(),
+                saved.getIntervalDays(), saved.getLastReviewedAt(), saved.getCreatedAt(),
+                null, null
+        );
+    }
+
+    private String shorten(String text) {
+        if (text == null) return "";
+        return text.length() > 300 ? text.substring(0, 300) + "..." : text;
     }
 }
