@@ -20,6 +20,8 @@ import InstallPrompt from './components/InstallPrompt';
 import SearchTrigger from './components/SearchTrigger';
 import PomodoroPage from './components/PomodoroPage';
 import InterviewPage from './components/InterviewPage';
+import CharacterPage from './components/CharacterPage';
+import BooksPage from './components/BooksPage';
 
 
 function App() {
@@ -58,6 +60,8 @@ function App() {
         <Route path="/habits" element={token ? <HabitsPage /> : <Navigate to="/" />} />
         <Route path="/pomodoro" element={token ? <PomodoroPage /> : <Navigate to="/" />} />
         <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/" />} />
+        <Route path="/character" element={token ? <CharacterPage /> : <Navigate to="/" />} />
+        <Route path="/books" element={token ? <BooksPage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

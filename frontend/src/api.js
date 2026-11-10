@@ -87,4 +87,10 @@ export const api = {
   getInterviewSessions: () => request('/interview'),
   getInterviewSession: (id) => request(`/interview/${id}`),
   generateInterviewCards: (id) => request(`/interview/${id}/generate-cards`, { method: 'POST' }),
+  getCharacterStats: () => request('/character/stats'),
+  getBooks: () => request('/books'),
+  createBook: (data) => request('/books', { method: 'POST', body: JSON.stringify(data) }),
+  updateBookProgress: (id, currentPage) => request(`/books/${id}/progress`, { method: 'PATCH', body: JSON.stringify({ currentPage }) }),
+  updateBookStatus: (id, status) => request(`/books/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  deleteBook: (id) => request(`/books/${id}`, { method: 'DELETE' }),
 };

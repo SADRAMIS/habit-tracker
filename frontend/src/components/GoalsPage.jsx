@@ -310,7 +310,12 @@ export default function GoalsPage({ onLogout }) {
                 <button onClick={() => navigate('/memorize')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">🧠 {t('memorize')}</button>
                 <button onClick={() => navigate('/feynman')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">✍️ {t('feynman_title')}</button>
                 <button onClick={() => navigate('/study')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">📚 {t('study')}</button>
-                <button onClick={() => navigate('/pomodoro')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">🍅 {t('pomodoro')}</button>
+
+                {/* 🆕 Новые кнопки */}
+                <button onClick={() => navigate('/character')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition border-t border-gray-100 dark:border-gray-700">🧙 Персонаж</button>
+                <button onClick={() => navigate('/books')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">📚 Книги</button>
+
+                <button onClick={() => navigate('/pomodoro')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition border-t border-gray-100 dark:border-gray-700">🍅 {t('pomodoro')}</button>
                 <button onClick={() => navigate('/interview')} className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm transition">🤖 {t('interview_title')}</button>
               </div>
             )}
