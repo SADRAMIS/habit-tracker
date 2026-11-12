@@ -93,4 +93,6 @@ export const api = {
   updateBookProgress: (id, currentPage) => request(`/books/${id}/progress`, { method: 'PATCH', body: JSON.stringify({ currentPage }) }),
   updateBookStatus: (id, status) => request(`/books/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   deleteBook: (id) => request(`/books/${id}`, { method: 'DELETE' }),
+  saveHealthLog: (data) => request('/health/log', { method: 'POST', body: JSON.stringify(data) }),
+  getHealthDashboard: () => request('/health/dashboard'),
 };

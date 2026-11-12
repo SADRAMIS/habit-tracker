@@ -3,7 +3,6 @@ package com.sadramis.habit_tracker.controller;
 import com.sadramis.habit_tracker.dto.HealthDashboardDto;
 import com.sadramis.habit_tracker.dto.HealthLogRequest;
 import com.sadramis.habit_tracker.exception.UserNotFoundException;
-import com.sadramis.habit_tracker.model.User;
 import com.sadramis.habit_tracker.repository.UserRepository;
 import com.sadramis.habit_tracker.service.HealthService;
 import org.springframework.http.ResponseEntity;

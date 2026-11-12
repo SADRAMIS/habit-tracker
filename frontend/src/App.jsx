@@ -22,6 +22,7 @@ import PomodoroPage from './components/PomodoroPage';
 import InterviewPage from './components/InterviewPage';
 import CharacterPage from './components/CharacterPage';
 import BooksPage from './components/BooksPage';
+import HealthPage from './components/HealthPage';
 
 
 function App() {
@@ -62,6 +63,7 @@ function App() {
         <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/" />} />
         <Route path="/character" element={token ? <CharacterPage /> : <Navigate to="/" />} />
         <Route path="/books" element={token ? <BooksPage /> : <Navigate to="/" />} />
+        <Route path="/health" element={token ? <HealthPage /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
