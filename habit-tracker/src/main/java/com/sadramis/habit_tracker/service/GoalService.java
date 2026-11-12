@@ -28,11 +28,13 @@ public class GoalService {
     private ProgressRepository progressRepository;
     private UserRepository userRepository;
     private static final Logger log = LoggerFactory.getLogger(GoalService.class);
+    private final CharacterService characterService;
 
-    public GoalService(GoalRepository goalRepository, ProgressRepository progressRepository, UserRepository userRepository) {
+    public GoalService(GoalRepository goalRepository, ProgressRepository progressRepository, UserRepository userRepository, CharacterService characterService) {
         this.goalRepository = goalRepository;
         this.progressRepository = progressRepository;
         this.userRepository = userRepository;
+        this.characterService = characterService;
     }
 
     @Transactional
@@ -136,9 +138,11 @@ public class GoalService {
         if (goal.getStatus() != GoalStatus.COMPLETED) {
             goal.setStatus(GoalStatus.COMPLETED);
             goalRepository.save(goal);
+
+            // 🆕 Начисляем 50 XP за дисциплину (STR)
+            characterService.addXp(userId, 50, "strength");
+
             log.info("Цель {} пользователя {} отмечена как COMPLETED", goalId, userId);
-        } else {
-            log.info("Цель {} уже была COMPLETED, пропускаем", goalId);
         }
     }
 

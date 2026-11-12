@@ -32,23 +32,19 @@ public class CharacterService {
         CharacterStats stats = getOrCreateStats(userId);
         stats.setXp(stats.getXp() + amount);
 
-        // Логика повышения уровня (простая формула)
         int requiredXp = stats.getLevel() * 100;
         if (stats.getXp() >= requiredXp) {
             stats.setLevel(stats.getLevel() + 1);
             stats.setXp(stats.getXp() - requiredXp);
-            // Бонусы за уровень
             stats.setHp(Math.min(100, stats.getHp() + 10));
             stats.setMp(Math.min(100, stats.getMp() + 10));
         }
 
-        // Распределение по атрибутам
         switch (attribute.toLowerCase()) {
             case "strength" -> stats.setStrength(stats.getStrength() + (amount / 10));
             case "intelligence" -> stats.setIntelligence(stats.getIntelligence() + (amount / 10));
             case "wisdom" -> stats.setWisdom(stats.getWisdom() + (amount / 10));
         }
-
         statsRepo.save(stats);
     }
 }

@@ -18,10 +18,12 @@ public class BookService {
 
     private final BookRepository bookRepo;
     private final UserRepository userRepo;
+    private final CharacterService characterService;
 
-    public BookService(BookRepository bookRepo, UserRepository userRepo) {
+    public BookService(BookRepository bookRepo, UserRepository userRepo, CharacterService characterService) {
         this.bookRepo = bookRepo;
         this.userRepo = userRepo;
+        this.characterService = characterService;
     }
 
     @Transactional
@@ -56,9 +58,10 @@ public class BookService {
 
         book.setCurrentPage(currentPage);
 
-        // Автоматическое завершение, если дочитали до конца
-        if (book.getTotalPages() > 0 && currentPage >= book.getTotalPages()) {
+        if (book.getTotalPages() > 0 && currentPage >= book.getTotalPages() && !book.getStatus().equals("COMPLETED")) {
             book.setStatus("COMPLETED");
+            // 🆕 Начисляем 100 XP за прочитанную книгу (INT)
+            characterService.addXp(userId, 100, "intelligence");
         } else if (book.getStatus().equals("WANT_TO_READ")) {
             book.setStatus("READING");
         }

@@ -22,13 +22,13 @@ public class HabitService {
     private final HabitRepository habitRepo;
     private final HabitCompletionRepository completionRepo;
     private final UserRepository userRepo;
+    private final CharacterService characterService;
 
-    public HabitService(HabitRepository habitRepo,
-                        HabitCompletionRepository completionRepo,
-                        UserRepository userRepo) {
+    public HabitService(HabitRepository habitRepo, HabitCompletionRepository completionRepo, UserRepository userRepo, CharacterService characterService) {
         this.habitRepo = habitRepo;
         this.completionRepo = completionRepo;
         this.userRepo = userRepo;
+        this.characterService = characterService;
     }
 
     @Transactional
@@ -70,6 +70,9 @@ public class HabitService {
             c.setDate(today);
             c.setCount(habit.getTargetPerDay());
             completionRepo.save(c);
+
+            // 🆕 Начисляем 10 XP за привычку (STR)
+            characterService.addXp(userId, 10, "strength");
         }
 
         return toDto(habit, true);
